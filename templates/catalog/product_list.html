@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Ofertum · Productos{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Productos</h2>
+
+<form class="row g-2 mb-4" action="">
+  <div class="col-sm-4">
+    <input class="form-control" name="q" placeholder="Buscar..." value="{{ q }}">
+  </div>
+  <div class="col-sm-3">
+    <input class="form-control" name="category" placeholder="Categoría" value="{{ category }}">
+  </div>
+  <div class="col-sm-3">
+    <input class="form-control" name="store" placeholder="Tienda" value="{{ store }}">
+  </div>
+  <div class="col-sm-1">
+    <input class="form-control" name="min" placeholder="Min" value="{{ price_min }}">
+  </div>
+  <div class="col-sm-1">
+    <input class="form-control" name="max" placeholder="Max" value="{{ price_max }}">
+  </div>
+</form>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+  {% for p in items %}
+  <div class="col reveal-up">
+    
+    <div class="card card-product h-100 card-tilt">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="badge-pill">{{ p.category }}</span>
+          <span class="text-muted small"><i class="bi bi-shop"></i> {{ p.store }}</span>
+        </div>
+        <h5 class="card-title mb-1">{{ p.name }}</h5>
+        <div class="price mb-3">${{ p.price }}</div>
+        <a href="#" class="btn btn-primary disabled"><i class="bi bi-box-arrow-up-right"></i> Ver oferta</a>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <p>No hay resultados.</p>
+  {% endfor %}
+</div>
+{% endblock %}
