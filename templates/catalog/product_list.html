@@ -34,7 +34,12 @@
         </div>
         <h5 class="card-title mb-1">{{ p.name }}</h5>
         <div class="price mb-3">${{ p.price }}</div>
-        <a href="#" class="btn btn-primary disabled"><i class="bi bi-box-arrow-up-right"></i> Ver oferta</a>
+        {% comment %} Si el producto tiene una oferta activa mostramos un badge {% endcomment %}
+        {% if p.producto_obj.obtener_oferta_activa %}
+          <a href="{% url 'catalog:product_detail' p.producto_obj.pk %}" class="btn btn-success"><i class="bi bi-tag-fill"></i> Ver oferta</a>
+        {% else %}
+          <a href="{% url 'catalog:product_detail' p.producto_obj.pk %}" class="btn btn-primary"><i class="bi bi-box-arrow-up-right"></i> Ver producto</a>
+        {% endif %}
       </div>
     </div>
   </div>

@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from .models import Producto
 
 def home(request):
     return render(request, "catalog/home.html")
@@ -12,17 +13,23 @@ def product_list(request):
     price_min = request.GET.get("min", "")
     price_max = request.GET.get("max", "")
 
-    # placeholder de ítems “mock” mientras no definimos modelos
-    items = [
-        {"name": "Teclado Mecánico RGB", "price": 149.9, "store": "TechStore", "category": "Periféricos"},
-        {"name": "SSD NVMe 1TB",        "price": 89.9,  "store": "CompuHouse","category": "Almacenamiento"},
-        {"name": "RTX 4070 Super",      "price": 599.0, "store": "MegaPC",    "category": "GPU"},
-    ]
+    # Consultar productos creados en la base de datos y mapear al formato de la plantilla
+    productos = Producto.objects.filter(disponible=True).order_by('nombre')
+
+    items = []
+    for p in productos:
+        items.append({
+            'name': p.nombre,
+            'price': p.obtener_precio_actual(),
+            'store': p.tienda,
+            'category': p.categoria,
+            'producto_obj': p,
+        })
 
     ctx = {
-        "q": q, "category": category, "store": store,
-        "price_min": price_min, "price_max": price_max,
-        "items": items,
+        'q': q, 'category': category, 'store': store,
+        'price_min': price_min, 'price_max': price_max,
+        'items': items,
     }
     return render(request, "catalog/product_list.html", ctx)
 
@@ -41,3 +48,18 @@ def categories(request):
         {"name":"Motherboards",   "icon":"motherboard","h":250},
     ]
     return render(request, "catalog/categories.html", {"cats": cats})
+
+
+def detalle_producto(request, pk):
+    """Vista de detalle para un producto."""
+    try:
+        producto = Producto.objects.get(pk=pk)
+    except Producto.DoesNotExist:
+        return render(request, 'catalog/product_detail.html', {'error': 'Producto no encontrado'})
+
+    oferta = producto.obtener_oferta_activa()
+
+    return render(request, 'catalog/product_detail.html', {
+        'producto': producto,
+        'oferta': oferta,
+    })

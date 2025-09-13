@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Ofertum · Detalle producto{% endblock %}
+
+{% block content %}
+{% if error %}
+  <div class="alert alert-warning">{{ error }}</div>
+{% else %}
+  <div class="row">
+    <div class="col-md-8">
+      <h2>{{ producto.nombre }}</h2>
+      <p class="text-muted">Categoría: {{ producto.categoria }} · Tienda: {{ producto.tienda }}</p>
+      <p class="text-muted">Fecha de creación: {{ producto.creado }}</p>
+
+      {% if producto.imagen %}
+        <div class="mb-3">
+          <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="img-fluid rounded-3">
+        </div>
+      {% endif %}
+
+      <div class="mb-3">
+        <strong>Precio base:</strong> ${{ producto.precio }}
+      </div>
+
+      <div class="mb-3">
+        <strong>Precio con descuento:</strong> ${{ producto.obtener_precio_actual }}
+      </div>
+
+      <div class="mb-3">
+        <strong>Descuento (%):</strong> {{ oferta.descuento_porcentaje }}
+      </div>
+
+      <h4 class="mt-4">Detalles del producto</h4>
+      <ul>
+        <li><strong>Nombre:</strong> {{ producto.nombre }}</li>
+        <li><strong>Descripción:</strong> {{ producto.descripcion }}</li>
+        <li><strong>Categoría:</strong> {{ producto.categoria }}</li>
+        <li><strong>Tienda:</strong> {{ producto.tienda }}</li>
+      </ul>
+
+    </div>
+    <div class="col-md-4">
+      <div class="p-3 bg-white rounded-4 shadow-sm text-center">
+        <div class="h3 mb-0">Comprar</div>
+        <a class="btn btn-primary" href="{{ producto.link }}">Ir a oferta</a>
+      </div>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
