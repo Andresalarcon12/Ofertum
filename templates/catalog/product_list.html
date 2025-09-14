@@ -1,8 +1,13 @@
 {% extends "base.html" %}
+{% load humanize %}
 {% block title %}Ofertum · Productos{% endblock %}
 
 {% block content %}
-<h2 class="mb-3">Productos</h2>
+<h2 class="mb-3">
+  Productos
+  {% if category %} · {{ category }}{% endif %}
+  {% if store %} · {{ store }}{% endif %}
+</h2>
 
 <form class="row g-2 mb-4" action="">
   <div class="col-sm-4">
@@ -25,21 +30,59 @@
 <div class="row row-cols-1 row-cols-md-3 g-4">
   {% for p in items %}
   <div class="col reveal-up">
-    
     <div class="card card-product h-100 card-tilt">
+      {% if p.producto_obj.imagen %}
+      <img src="{{ p.producto_obj.imagen.url }}" class="card-img-top" alt="{{ p.name }}">
+      {% endif %}
+
       <div class="card-body">
         <div class="d-flex align-items-center justify-content-between mb-2">
-          <span class="badge-pill">{{ p.category }}</span>
-          <span class="text-muted small"><i class="bi bi-shop"></i> {{ p.store }}</span>
+          {% if p.category %}
+            <a href="{% url 'catalog:category_detail' p.category|slugify %}" class="badge-pill text-decoration-none">
+              {{ p.category }}
+            </a>
+          {% else %}
+            <span class="badge-pill">Sin categoría</span>
+          {% endif %}
+
+          {% if p.store %}
+            <a href="{% url 'catalog:store_detail' p.store|slugify %}" class="text-muted small text-decoration-none">
+              <i class="bi bi-shop"></i> {{ p.store }}
+            </a>
+          {% endif %}
         </div>
-        <h5 class="card-title mb-1">{{ p.name }}</h5>
-        <div class="price mb-3">${{ p.price }}</div>
-        {% comment %} Si el producto tiene una oferta activa mostramos un badge {% endcomment %}
-        {% if p.producto_obj.obtener_oferta_activa %}
-          <a href="{% url 'catalog:product_detail' p.producto_obj.pk %}" class="btn btn-success"><i class="bi bi-tag-fill"></i> Ver oferta</a>
-        {% else %}
-          <a href="{% url 'catalog:product_detail' p.producto_obj.pk %}" class="btn btn-primary"><i class="bi bi-box-arrow-up-right"></i> Ver producto</a>
-        {% endif %}
+
+        <h5 class="card-title mb-1">
+          <a href="{% url 'catalog:product_detail' p.producto_obj.pk %}" class="text-decoration-none">
+            {{ p.name }}
+          </a>
+        </h5>
+
+        {# Mostrar precio vigente y, si hay oferta, tachar el base #}
+        {% with oferta=p.producto_obj.obtener_oferta_activa %}
+          {% if oferta %}
+            <div class="mb-1">
+              <span class="text-muted text-decoration-line-through small me-2">
+                ${{ p.producto_obj.precio|floatformat:2 }}
+              </span>
+              <span class="price">${{ p.price|floatformat:2 }}</span>
+            </div>
+            <span class="badge-spark mb-3 d-inline-block"><i class="bi bi-tag-fill me-1"></i> Oferta activa</span>
+          {% else %}
+            <div class="price mb-3">${{ p.price|floatformat:2 }}</div>
+          {% endif %}
+        {% endwith %}
+
+        <div class="d-flex gap-2">
+          <a href="{% url 'catalog:product_detail' p.producto_obj.pk %}" class="btn btn-primary">
+            <i class="bi bi-box-arrow-up-right"></i> Ver producto
+          </a>
+          {% if p.producto_obj.link %}
+            <a href="{{ p.producto_obj.link }}" target="_blank" class="btn btn-outline-primary">
+              <i class="bi bi-cart-check"></i> Ir a tienda
+            </a>
+          {% endif %}
+        </div>
       </div>
     </div>
   </div>

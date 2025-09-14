@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Ofertum · Tiendas{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h2 class="mb-0">Tiendas</h2>
+  <a href="{% url 'catalog:product_list' %}" class="btn btn-outline-secondary">Todas</a>
+</div>
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+  {% for s in stores %}
+  <div class="col reveal-up">
+    <a href="{% url 'catalog:store_detail' s.slug %}" class="text-decoration-none">
+      <div class="neon-card card-tilt p-4 h-100">
+        <h5 class="mb-1">{{ s.name }}</h5>
+        <div class="text-secondary">Ver ofertas de esta tienda</div>
+      </div>
+    </a>
+  </div>
+  {% empty %}
+  <p>No hay tiendas aún (crea ofertas primero).</p>
+  {% endfor %}
+</div>
+{% endblock %}

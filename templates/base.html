@@ -35,7 +35,8 @@
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item"><a class="nav-link" href="{% url 'catalog:product_list' %}"><i class="bi bi-grid"></i> Productos</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'catalog:categories' %}"><i class="bi bi-tags"></i> Categorías</a></li>
-            <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-shop"></i> Tiendas</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'catalog:stores' %}">Tiendas</a>
+
           </ul>
           <form class="d-flex" role="search" action="{% url 'catalog:product_list' %}">
             <input class="form-control me-2" type="search" name="q" placeholder="Buscar...">
