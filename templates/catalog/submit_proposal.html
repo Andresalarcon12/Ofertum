@@ -2,10 +2,33 @@
 {% block title %}Enviar propuesta - Ofertum{% endblock %}
 
 {% block content %}
-  <h2>Enviar propuesta de producto</h2>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn btn-primary">Enviar propuesta</button>
-  </form>
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-sm rounded-3">
+        <div class="card-body p-4">
+          <h3 class="card-title mb-3">Enviar propuesta de producto</h3>
+          <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+              <div class="mb-3">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}
+                  <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+
+            <div class="d-flex justify-content-end">
+              <a href="{% url 'catalog:product_list' %}" class="btn btn-secondary me-2">Cancelar</a>
+              <button class="btn btn-primary">Enviar propuesta</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

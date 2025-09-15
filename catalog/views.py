@@ -1,6 +1,6 @@
 from decimal import Decimal, InvalidOperation
 
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Avg
 from django.http import Http404
 from django.shortcuts import render, get_object_or_404
 from django.utils.text import slugify
@@ -15,12 +15,26 @@ from django.db import IntegrityError
 from django.utils import timezone
 from django.contrib.auth import login, logout
 from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import AuthenticationForm
 
 
 class RegisterForm(forms.Form):
     username = forms.CharField(max_length=150)
     password = forms.CharField(widget=forms.PasswordInput)
     email = forms.EmailField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            field.widget.attrs.update({'class': 'form-control', 'placeholder': field.label})
+
+
+class CustomAuthForm(AuthenticationForm):
+    """AuthenticationForm that adds Bootstrap classes to widgets."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            field.widget.attrs.update({'class': 'form-control', 'placeholder': field.label})
 
 
 def register_view(request):
@@ -54,11 +68,22 @@ class ProposalForm(forms.ModelForm):
         model = Proposal
         fields = ['nombre', 'descripcion', 'categoria', 'tienda', 'link', 'imagen', 'precio']
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            # file input should keep file type; widget attrs ok
+            field.widget.attrs.update({'class': 'form-control', 'placeholder': field.label})
+
 
 class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
         fields = ['rating', 'comentario']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            field.widget.attrs.update({'class': 'form-control', 'placeholder': field.label})
 
 
 @login_required
@@ -160,9 +185,11 @@ def product_list(request):
     store = (request.GET.get("store") or "").strip()
     price_min = (request.GET.get("min") or "").strip()
     price_max = (request.GET.get("max") or "").strip()
+    # rating filter: minimum average rating (1-5)
+    min_rating = (request.GET.get("rating") or "").strip()
 
-    # Base queryset
-    qs = Producto.objects.filter(disponible=True)
+    # Base queryset, annotate with avg rating and count using DB-safe names
+    qs = Producto.objects.filter(disponible=True).annotate(db_avg_rating=Avg('reviews__rating'), db_rating_count=Count('reviews'))
 
     if q:
         qs = qs.filter(Q(nombre__icontains=q) | Q(descripcion__icontains=q))
@@ -172,6 +199,15 @@ def product_list(request):
 
     if store:
         qs = qs.filter(tienda__iexact=store)
+
+    # Apply rating filter at DB level when possible
+    try:
+        if min_rating:
+            min_r = float(min_rating)
+            qs = qs.filter(db_avg_rating__isnull=False).filter(db_avg_rating__gte=min_r)
+    except ValueError:
+        # ignore invalid rating input
+        pass
 
     productos = qs.order_by("nombre")
 
@@ -201,12 +237,16 @@ def product_list(request):
             "store": p.tienda,
             "category": p.categoria,
             "producto_obj": p,   # por si tu template lo usa
+            # map annotated values into simple keys used by template
+            "avg_rating": getattr(p, 'db_avg_rating', None),
+            "rating_count": getattr(p, 'db_rating_count', 0),
         })
 
     ctx = {
         "q": q, "category": category, "store": store,
         "price_min": price_min, "price_max": price_max,
         "items": items,
+        "min_rating": min_rating,
     }
     return render(request, "catalog/product_list.html", ctx)
 

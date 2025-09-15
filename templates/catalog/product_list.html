@@ -8,11 +8,6 @@
   {% if category %} · {{ category }}{% endif %}
   {% if store %} · {{ store }}{% endif %}
 </h2>
-{% if request.user.is_authenticated and not request.user.is_staff %}
-  <div class="mb-3">
-    <a class="btn btn-success" href="{% url 'catalog:submit_proposal' %}">Crear propuesta</a>
-  </div>
-{% endif %}
 
 {# Mostrar el botón siempre, redirigiendo a login si el usuario no está autenticado #}
 <div class="mb-3">
@@ -38,6 +33,19 @@
   </div>
   <div class="col-sm-1">
     <input class="form-control" name="max" placeholder="Max" value="{{ price_max }}">
+  </div>
+  <div class="col-sm-2">
+    <select class="form-select" name="rating">
+      <option value="">Filtrar por rating</option>
+      <option value="1" {% if min_rating == '1' %}selected{% endif %}>1 estrella y más</option>
+      <option value="2" {% if min_rating == '2' %}selected{% endif %}>2 estrellas y más</option>
+      <option value="3" {% if min_rating == '3' %}selected{% endif %}>3 estrellas y más</option>
+      <option value="4" {% if min_rating == '4' %}selected{% endif %}>4 estrellas y más</option>
+      <option value="4.5" {% if min_rating == '4.5' %}selected{% endif %}>4.5 estrellas y más</option>
+    </select>
+  </div>
+  <div class="col-sm-1 d-flex align-items-center">
+    <button class="btn btn-primary" type="submit">Buscar</button>
   </div>
 </form>
 
@@ -86,6 +94,14 @@
             <div class="price mb-3">${{ p.price|floatformat:2 }}</div>
           {% endif %}
         {% endwith %}
+
+        <div class="mb-2 small text-muted">
+          {% if p.avg_rating %}
+            <strong>{{ p.avg_rating|floatformat:1 }}</strong> / 5 · {{ p.rating_count }} reseñas
+          {% else %}
+            No hay valoraciones
+          {% endif %}
+        </div>
 
         <div class="d-flex gap-2">
           <a href="{% url 'catalog:product_detail' p.producto_obj.pk %}" class="btn btn-primary">
