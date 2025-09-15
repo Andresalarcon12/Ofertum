@@ -36,6 +36,40 @@
         <li><strong>Categoría:</strong> {{ producto.categoria }}</li>
         <li><strong>Tienda:</strong> {{ producto.tienda }}</li>
       </ul>
+      <hr>
+      <h4>Valoraciones</h4>
+      <p>
+        {% if producto.avg_rating %}
+          <strong>Puntuación media:</strong> {{ producto.avg_rating|floatformat:1 }} / 5
+          · <strong>Reseñas:</strong> {{ producto.rating_count }}
+        {% else %}
+          No hay valoraciones todavía.
+        {% endif %}
+      </p>
+
+      <h5>Comentarios</h5>
+      {% if producto.reviews.exists %}
+        <ul class="list-unstyled">
+          {% for r in producto.reviews.all %}
+            <li class="border p-2 mb-2">
+              <strong>{{ r.usuario.username }}</strong> · {{ r.rating }} ⭐
+              <div class="small text-muted">{{ r.creado }}</div>
+              <p>{{ r.comentario }}</p>
+              {% if request.user.is_authenticated and request.user == r.usuario %}
+                <a href="{% url 'catalog:add_or_edit_review' producto.pk %}" class="btn btn-sm btn-outline-secondary">Editar</a>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted">No hay comentarios todavía.</p>
+      {% endif %}
+
+      {% if request.user.is_authenticated %}
+        <a href="{% url 'catalog:add_or_edit_review' producto.pk %}" class="btn btn-primary">Añadir / Editar mi reseña</a>
+      {% else %}
+        <p><a href="/admin/login/?next={{ request.path }}">Inicia sesión</a> para valorar y comentar.</p>
+      {% endif %}
 
     </div>
     <div class="col-md-4">

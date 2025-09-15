@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Enviar propuesta - Ofertum{% endblock %}
+
+{% block content %}
+  <h2>Enviar propuesta de producto</h2>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary">Enviar propuesta</button>
+  </form>
+{% endblock %}

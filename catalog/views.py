@@ -6,6 +6,141 @@ from django.shortcuts import render, get_object_or_404
 from django.utils.text import slugify
 
 from .models import Producto
+from .models import Proposal, Review
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import redirect
+from django import forms
+from django.contrib import messages
+from django.db import IntegrityError
+from django.utils import timezone
+from django.contrib.auth import login, logout
+from django.contrib.auth import get_user_model
+
+
+class RegisterForm(forms.Form):
+    username = forms.CharField(max_length=150)
+    password = forms.CharField(widget=forms.PasswordInput)
+    email = forms.EmailField(required=False)
+
+
+def register_view(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            User = get_user_model()
+            user = User.objects.create_user(
+                username=form.cleaned_data['username'],
+                password=form.cleaned_data['password'],
+                email=form.cleaned_data.get('email') or ''
+            )
+            login(request, user)
+            messages.success(request, 'Cuenta creada y sesión iniciada.')
+            return redirect('catalog:product_list')
+        else:
+            messages.error(request, 'Corrija los errores del formulario.')
+    else:
+        form = RegisterForm()
+    return render(request, 'catalog/register.html', {'form': form})
+
+
+def logout_view(request):
+    logout(request)
+    messages.info(request, 'Sesión cerrada.')
+    return redirect('catalog:product_list')
+
+
+class ProposalForm(forms.ModelForm):
+    class Meta:
+        model = Proposal
+        fields = ['nombre', 'descripcion', 'categoria', 'tienda', 'link', 'imagen', 'precio']
+
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['rating', 'comentario']
+
+
+@login_required
+def submit_proposal(request):
+    if request.method == 'POST':
+        form = ProposalForm(request.POST, request.FILES)
+        if form.is_valid():
+            prop = form.save(commit=False)
+            prop.usuario = request.user
+            prop.save()
+            messages.success(request, 'Propuesta enviada y está pendiente de revisión.')
+            return redirect('catalog:product_list')
+        else:
+            messages.error(request, 'Por favor corrija los errores del formulario.')
+    else:
+        form = ProposalForm()
+    return render(request, 'catalog/submit_proposal.html', {'form': form})
+
+
+def is_admin(user):
+    return user.is_active and user.is_staff
+
+
+@user_passes_test(is_admin)
+def admin_proposals(request):
+    qs = Proposal.objects.order_by('-creado')
+    return render(request, 'catalog/admin_proposals.html', {'proposals': qs})
+
+
+@user_passes_test(is_admin)
+def admin_proposal_action(request, pk, action):
+    prop = get_object_or_404(Proposal, pk=pk)
+    if action == 'approve' and prop.status == Proposal.STATUS_PENDING:
+        # create product
+        Producto.objects.create(
+            nombre=prop.nombre,
+            descripcion=prop.descripcion,
+            categoria=prop.categoria,
+            tienda=prop.tienda,
+            link=prop.link,
+            imagen=prop.imagen,
+            precio=prop.precio,
+            disponible=True,
+        )
+        prop.status = Proposal.STATUS_APPROVED
+        prop.approved_at = timezone.now()
+        prop.save()
+        messages.success(request, 'Propuesta aprobada y convertida en producto.')
+    elif action == 'reject' and prop.status == Proposal.STATUS_PENDING:
+        prop.status = Proposal.STATUS_REJECTED
+        prop.save()
+        messages.success(request, 'Propuesta rechazada.')
+    else:
+        messages.error(request, 'Acción inválida o propuesta ya moderada.')
+    return redirect('catalog:admin_proposals')
+
+
+@login_required
+def add_or_edit_review(request, pk):
+    producto = get_object_or_404(Producto, pk=pk)
+    try:
+        review = Review.objects.get(producto=producto, usuario=request.user)
+    except Review.DoesNotExist:
+        review = None
+
+    if request.method == 'POST':
+        form = ReviewForm(request.POST, instance=review)
+        if form.is_valid():
+            rev = form.save(commit=False)
+            rev.producto = producto
+            rev.usuario = request.user
+            try:
+                rev.save()
+                messages.success(request, 'Reseña guardada.')
+            except IntegrityError:
+                messages.error(request, 'Ya existe una reseña para este producto.')
+            return redirect('catalog:product_detail', pk=producto.pk)
+        else:
+            messages.error(request, 'Por favor corrija los errores del formulario.')
+    else:
+        form = ReviewForm(instance=review)
+    return render(request, 'catalog/review_form.html', {'form': form, 'producto': producto, 'review': review})
 
 
 def home(request):

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Propuestas - Moderación{% endblock %}
+
+{% block content %}
+  <h2>Propuestas</h2>
+  <table class="table">
+    <thead><tr><th>ID</th><th>Nombre</th><th>Usuario</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr></thead>
+    <tbody>
+      {% for p in proposals %}
+        <tr>
+          <td>{{ p.id }}</td>
+          <td>{{ p.nombre }}</td>
+          <td>{{ p.usuario.username }}</td>
+          <td>{{ p.precio }}</td>
+          <td>{{ p.get_status_display }}</td>
+          <td>
+            {% if p.status == 'pending' %}
+              <a class="btn btn-sm btn-success" href="{% url 'catalog:admin_proposal_action' p.pk 'approve' %}">Aprobar</a>
+              <a class="btn btn-sm btn-danger" href="{% url 'catalog:admin_proposal_action' p.pk 'reject' %}">Rechazar</a>
+            {% else %}
+              -
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6">No hay propuestas.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Reseña - {{ producto.nombre }}{% endblock %}
+
+{% block content %}
+  <h2>Reseña para {{ producto.nombre }}</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary">Guardar reseña</button>
+    <a class="btn btn-secondary" href="{% url 'catalog:product_detail' producto.pk %}">Cancelar</a>
+  </form>
+{% endblock %}

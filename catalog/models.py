@@ -115,3 +115,95 @@ class Oferta(models.Model):
         descuento = (self.descuento_porcentaje or Decimal('0')) / Decimal('100')
         precio = (self.producto.precio * (Decimal('1') - descuento)).quantize(Decimal('0.01'))
         return precio
+
+
+from django.conf import settings
+
+
+class Proposal(models.Model):
+    """Propuesta de producto enviada por un usuario (pendiente de moderación).
+
+    No se debe permitir que usuarios normales creen `Producto` directamente;
+    en su lugar envían propuestas que los administradores pueden aprobar o rechazar.
+    """
+    STATUS_PENDING = 'pending'
+    STATUS_APPROVED = 'approved'
+    STATUS_REJECTED = 'rejected'
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pendiente'),
+        (STATUS_APPROVED, 'Aprobada'),
+        (STATUS_REJECTED, 'Rechazada'),
+    ]
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='proposals',
+        verbose_name='Usuario',
+    )
+    nombre = models.CharField('Nombre', max_length=200)
+    descripcion = models.TextField('Descripción', blank=True)
+    categoria = models.CharField('Categoría', max_length=100, blank=True, db_index=True)
+    tienda = models.CharField('Tienda', max_length=150, blank=True, db_index=True)
+    link = models.URLField('Enlace del producto', blank=True)
+    imagen = models.ImageField('Imagen', upload_to='proposals/', null=True, blank=True)
+    precio = models.DecimalField(
+        'Precio', max_digits=10, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))]
+    )
+    creado = models.DateTimeField('Fecha de propuesta', auto_now_add=True)
+    status = models.CharField('Estado', max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    admin_note = models.TextField('Nota del moderador', blank=True)
+    approved_at = models.DateTimeField('Aprobada en', null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Propuesta'
+        verbose_name_plural = 'Propuestas'
+        ordering = ['-creado']
+
+    def __str__(self):
+        return f"{self.nombre} ({self.usuario}) - {self.get_status_display()}"
+
+
+class Review(models.Model):
+    """Comentarios y calificaciones de productos por usuarios autenticados.
+
+    - rating: 1..5
+    - Cada usuario puede tener una única review por producto (unique_together)
+    """
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name='reviews')
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.PositiveSmallIntegerField('Puntuación', validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comentario = models.TextField('Comentario', blank=True)
+    creado = models.DateTimeField('Creado', auto_now_add=True)
+    actualizado = models.DateTimeField('Actualizado', auto_now=True)
+
+    class Meta:
+        verbose_name = 'Reseña'
+        verbose_name_plural = 'Reseñas'
+        unique_together = (('producto', 'usuario'),)
+        ordering = ['-creado']
+
+    def __str__(self):
+        return f"{self.producto.nombre} - {self.usuario} ({self.rating})"
+
+
+    
+    # ---------- Helper properties on Producto (attached dynamically) ----------
+
+
+def producto_avg_rating(self):
+    qs = self.reviews.all()
+    if not qs.exists():
+        return None
+    return qs.aggregate(avg=models.Avg('rating'))['avg']
+
+
+def producto_rating_count(self):
+    return self.reviews.count()
+
+
+# attach helper properties to Producto for templates convenience
+Producto.avg_rating = property(producto_avg_rating)
+Producto.rating_count = property(producto_rating_count)

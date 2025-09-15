@@ -42,11 +42,26 @@
             <input class="form-control me-2" type="search" name="q" placeholder="Buscar...">
             <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Buscar</button>
           </form>
+          <div class="ms-3 d-flex align-items-center">
+            {% if request.user.is_authenticated %}
+              <span class="me-2">Hola, {{ request.user.username }}</span>
+              <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'catalog:admin_proposals' %}">{% if request.user.is_staff %}Moderación{% else %}Mi cuenta{% endif %}</a>
+              <a class="btn btn-outline-danger btn-sm" href="{% url 'catalog:logout' %}">Cerrar sesión</a>
+            {% else %}
+              <a class="btn btn-outline-primary btn-sm me-2" href="{% url 'catalog:register' %}">Registrarse</a>
+              <a class="btn btn-primary btn-sm" href="{% url 'catalog:login' %}">Iniciar sesión</a>
+            {% endif %}
+          </div>
         </div>
       </div>
     </nav>
 
     <main class="container my-5">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
       {% block content %}{% endblock %}
     </main>
 

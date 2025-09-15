@@ -8,6 +8,20 @@
   {% if category %} · {{ category }}{% endif %}
   {% if store %} · {{ store }}{% endif %}
 </h2>
+{% if request.user.is_authenticated and not request.user.is_staff %}
+  <div class="mb-3">
+    <a class="btn btn-success" href="{% url 'catalog:submit_proposal' %}">Crear propuesta</a>
+  </div>
+{% endif %}
+
+{# Mostrar el botón siempre, redirigiendo a login si el usuario no está autenticado #}
+<div class="mb-3">
+  {% if request.user.is_authenticated %}
+    <a class="btn btn-success" href="{% url 'catalog:submit_proposal' %}">Crear propuesta</a>
+  {% else %}
+    <a class="btn btn-success" href="{% url 'catalog:login' %}?next={% url 'catalog:submit_proposal' %}">Crear propuesta</a>
+  {% endif %}
+</div>
 
 <form class="row g-2 mb-4" action="">
   <div class="col-sm-4">
