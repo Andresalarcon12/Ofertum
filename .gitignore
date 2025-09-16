@@ -1,16 +1,4 @@
-﻿__pycache__/
-*.py[cod]
-*.log
-db.sqlite3
-*.sqlite3
-
-.venv/
+﻿.venv/
 venv/
 env/
 
-staticfiles/
-media/
-
-.vscode/
-.DS_Store
-Thumbs.db
