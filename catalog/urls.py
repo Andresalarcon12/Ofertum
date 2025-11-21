@@ -8,6 +8,8 @@ urlpatterns = [
     path("", views.home, name="home"),
     path("products/", views.product_list, name="product_list"),
     path("products/<int:pk>/", views.detalle_producto, name="product_detail"),
+     # --- NUEVA RUTA DE REPORTE ---
+    path("products/export/", views.export_products_report, name="products_export"),
     path("proposals/submit/", views.submit_proposal, name="submit_proposal"),
     path("proposals/admin/", views.admin_proposals, name="admin_proposals"),
     path("proposals/<int:pk>/<str:action>/", views.admin_proposal_action, name="admin_proposal_action"),

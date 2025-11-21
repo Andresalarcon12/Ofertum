@@ -3,121 +3,259 @@
 {% block title %}Ofertum · Productos{% endblock %}
 
 {% block content %}
-<h2 class="mb-3">
-  Productos
-  {% if category %} · {{ category }}{% endif %}
-  {% if store %} · {{ store }}{% endif %}
-</h2>
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h2 class="mb-0">
+    Productos
+    {% if category %}<span class="text-muted">· {{ category }}</span>{% endif %}
+    {% if store %}<span class="text-muted">· {{ store }}</span>{% endif %}
+  </h2>
 
-{# Mostrar el botón siempre, redirigiendo a login si el usuario no está autenticado #}
-<div class="mb-3">
-  {% if request.user.is_authenticated %}
-    <a class="btn btn-success" href="{% url 'catalog:submit_proposal' %}">Crear propuesta</a>
-  {% else %}
-    <a class="btn btn-success" href="{% url 'catalog:login' %}?next={% url 'catalog:submit_proposal' %}">Crear propuesta</a>
-  {% endif %}
+  <div class="d-flex gap-2">
+    {% if request.user.is_authenticated %}
+      <a class="btn btn-success" href="{% url 'catalog:submit_proposal' %}">
+        <i class="bi bi-plus-circle me-1"></i> Crear propuesta
+      </a>
+    {% else %}
+      <a class="btn btn-success" href="{% url 'catalog:login' %}?next={% url 'catalog:submit_proposal' %}">
+        <i class="bi bi-plus-circle me-1"></i> Crear propuesta
+      </a>
+    {% endif %}
+    <a class="btn btn-outline-secondary" href="{% url 'catalog:product_list' %}">
+      <i class="bi bi-x-circle me-1"></i> Limpiar filtros
+    </a>
+     <!-- Reporte PDF conservando filtros -->
+  <form method="get" action="{% url 'catalog:products_export' %}">
+
+    <input type="hidden" name="q" value="{{ q }}">
+    <input type="hidden" name="category" value="{{ category }}">
+    <input type="hidden" name="store" value="{{ store }}">
+    <input type="hidden" name="min" value="{{ price_min }}">
+    <input type="hidden" name="max" value="{{ price_max }}">
+    <input type="hidden" name="rating" value="{{ min_rating }}">
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <input type="hidden" name="format" value="pdf">
+    <button class="btn btn-outline-primary" type="submit">
+      <i class="bi bi-filetype-pdf"></i> PDF
+    </button>
+  </form>
+
+  <!-- Reporte Excel conservando filtros -->
+  <form method="get" action="{% url 'catalog:products_export' %}">
+
+    <input type="hidden" name="q" value="{{ q }}">
+    <input type="hidden" name="category" value="{{ category }}">
+    <input type="hidden" name="store" value="{{ store }}">
+    <input type="hidden" name="min" value="{{ price_min }}">
+    <input type="hidden" name="max" value="{{ price_max }}">
+    <input type="hidden" name="rating" value="{{ min_rating }}">
+    <input type="hidden" name="sort" value="{{ sort }}">
+    <input type="hidden" name="format" value="xlsx">
+    <button class="btn btn-outline-success" type="submit">
+      <i class="bi bi-file-earmark-spreadsheet"></i> Excel
+    </button>
+  </form>
+</div>
 </div>
 
-<form class="row g-2 mb-4" action="">
+{# Chips de filtros activos #}
+<div class="mb-3">
+  {% if q %}<span class="badge bg-light text-dark me-1"><i class="bi bi-search"></i> {{ q }}</span>{% endif %}
+  {% if category %}<span class="badge bg-light text-dark me-1"><i class="bi bi-tag"></i> {{ category }}</span>{% endif %}
+  {% if store %}<span class="badge bg-light text-dark me-1"><i class="bi bi-shop"></i> {{ store }}</span>{% endif %}
+  {% if price_min %}<span class="badge bg-light text-dark me-1"><i class="bi bi-currency-dollar"></i> Min {{ price_min }}</span>{% endif %}
+  {% if price_max %}<span class="badge bg-light text-dark me-1"><i class="bi bi-currency-dollar"></i> Max {{ price_max }}</span>{% endif %}
+  {% if min_rating %}<span class="badge bg-light text-dark me-1"><i class="bi bi-stars"></i> {{ min_rating }}+</span>{% endif %}
+</div>
+
+<form class="row gy-2 gx-2 mb-4 align-items-end" action="">
   <div class="col-sm-4">
-    <input class="form-control" name="q" placeholder="Buscar..." value="{{ q }}">
+    <label class="form-label mb-1">Buscar</label>
+    <input class="form-control" name="q" placeholder="Nombre o descripción..." value="{{ q }}">
   </div>
   <div class="col-sm-3">
+    <label class="form-label mb-1">Categoría</label>
     <input class="form-control" name="category" placeholder="Categoría" value="{{ category }}">
   </div>
   <div class="col-sm-3">
+    <label class="form-label mb-1">Tienda</label>
     <input class="form-control" name="store" placeholder="Tienda" value="{{ store }}">
   </div>
   <div class="col-sm-1">
-    <input class="form-control" name="min" placeholder="Min" value="{{ price_min }}">
+    <label class="form-label mb-1">Min</label>
+    <input class="form-control" name="min" placeholder="0" value="{{ price_min }}">
   </div>
   <div class="col-sm-1">
-    <input class="form-control" name="max" placeholder="Max" value="{{ price_max }}">
+    <label class="form-label mb-1">Max</label>
+    <input class="form-control" name="max" placeholder="999" value="{{ price_max }}">
   </div>
+
   <div class="col-sm-2">
+    <label class="form-label mb-1">Rating</label>
     <select class="form-select" name="rating">
-      <option value="">Filtrar por rating</option>
-      <option value="1" {% if min_rating == '1' %}selected{% endif %}>1 estrella y más</option>
-      <option value="2" {% if min_rating == '2' %}selected{% endif %}>2 estrellas y más</option>
-      <option value="3" {% if min_rating == '3' %}selected{% endif %}>3 estrellas y más</option>
-      <option value="4" {% if min_rating == '4' %}selected{% endif %}>4 estrellas y más</option>
+      <option value="">—</option>
+      <option value="1"   {% if min_rating == '1' %}selected{% endif %}>1 estrella y más</option>
+      <option value="2"   {% if min_rating == '2' %}selected{% endif %}>2 estrellas y más</option>
+      <option value="3"   {% if min_rating == '3' %}selected{% endif %}>3 estrellas y más</option>
+      <option value="4"   {% if min_rating == '4' %}selected{% endif %}>4 estrellas y más</option>
       <option value="4.5" {% if min_rating == '4.5' %}selected{% endif %}>4.5 estrellas y más</option>
     </select>
   </div>
-  <div class="col-sm-1 d-flex align-items-center">
-    <button class="btn btn-primary" type="submit">Buscar</button>
+
+  <div class="col-sm-3">
+    <label class="form-label mb-1">Ordenar por</label>
+    <select class="form-select" name="sort">
+      <option value="name"       {% if sort == 'name' %}selected{% endif %}>Nombre (A–Z)</option>
+      <option value="price_asc"  {% if sort == 'price_asc' %}selected{% endif %}>Precio: menor a mayor</option>
+      <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Precio: mayor a menor</option>
+      <option value="rating"     {% if sort == 'rating' %}selected{% endif %}>Mejor valorados</option>
+    </select>
+  </div>
+
+  <div class="col-sm-2">
+    <button class="btn btn-primary w-100" type="submit">
+      <i class="bi bi-funnel"></i> Aplicar
+    </button>
   </div>
 </form>
 
-<div class="row row-cols-1 row-cols-md-3 g-4">
-  {% for p in items %}
-  <div class="col reveal-up">
-    <div class="card card-product h-100 card-tilt">
-      {% if p.producto_obj.imagen %}
-      <img src="{{ p.producto_obj.imagen.url }}" class="card-img-top" alt="{{ p.name }}">
-      {% endif %}
+{% if items %}
+  <div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for p in items %}
+    <div class="col reveal-up">
+      <div class="card card-product h-100 card-tilt">
+        {% if p.producto_obj.imagen %}
+          <img src="{{ p.producto_obj.imagen.url }}" class="card-img-top" alt="{{ p.name }}">
+        {% endif %}
 
-      <div class="card-body">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          {% if p.category %}
-            <a href="{% url 'catalog:category_detail' p.category|slugify %}" class="badge-pill text-decoration-none">
-              {{ p.category }}
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            {% if p.category %}
+              <a href="{% url 'catalog:category_detail' p.category|slugify %}" class="badge-pill text-decoration-none">
+                {{ p.category }}
+              </a>
+            {% else %}
+              <span class="badge-pill">Sin categoría</span>
+            {% endif %}
+
+            {% if p.store %}
+              <a href="{% url 'catalog:store_detail' p.store|slugify %}" class="text-muted small text-decoration-none">
+                <i class="bi bi-shop"></i> {{ p.store }}
+              </a>
+            {% endif %}
+          </div>
+
+          <h5 class="card-title mb-1">
+            <a href="{% url 'catalog:product_detail' p.producto_obj.pk %}" class="text-decoration-none">
+              {{ p.name }}
             </a>
-          {% else %}
-            <span class="badge-pill">Sin categoría</span>
-          {% endif %}
+          </h5>
 
-          {% if p.store %}
-            <a href="{% url 'catalog:store_detail' p.store|slugify %}" class="text-muted small text-decoration-none">
-              <i class="bi bi-shop"></i> {{ p.store }}
-            </a>
-          {% endif %}
-        </div>
-
-        <h5 class="card-title mb-1">
-          <a href="{% url 'catalog:product_detail' p.producto_obj.pk %}" class="text-decoration-none">
-            {{ p.name }}
-          </a>
-        </h5>
-
-        {# Mostrar precio vigente y, si hay oferta, tachar el base #}
-        {% with oferta=p.producto_obj.obtener_oferta_activa %}
-          {% if oferta %}
-            <div class="mb-1">
-              <span class="text-muted text-decoration-line-through small me-2">
-                ${{ p.producto_obj.precio|floatformat:2 }}
+          {# Precio y oferta #}
+          {% with oferta=p.producto_obj.obtener_oferta_activa %}
+            {% if oferta %}
+              <div class="mb-1">
+                <span class="text-muted text-decoration-line-through small me-2">
+                  ${{ p.producto_obj.precio|floatformat:2 }}
+                </span>
+                <span class="price">${{ p.price|floatformat:2 }}</span>
+              </div>
+              <span class="badge-spark mb-3 d-inline-block">
+                <i class="bi bi-tag-fill me-1"></i> Oferta activa
               </span>
-              <span class="price">${{ p.price|floatformat:2 }}</span>
-            </div>
-            <span class="badge-spark mb-3 d-inline-block"><i class="bi bi-tag-fill me-1"></i> Oferta activa</span>
-          {% else %}
-            <div class="price mb-3">${{ p.price|floatformat:2 }}</div>
-          {% endif %}
-        {% endwith %}
+            {% else %}
+              <div class="price mb-3">${{ p.price|floatformat:2 }}</div>
+            {% endif %}
+          {% endwith %}
 
-        <div class="mb-2 small text-muted">
-          {% if p.avg_rating %}
-            <strong>{{ p.avg_rating|floatformat:1 }}</strong> / 5 · {{ p.rating_count }} reseñas
-          {% else %}
-            No hay valoraciones
-          {% endif %}
-        </div>
+          {# Estrellas de rating (sin medios; redondeo a entero) #}
+          <div class="mb-2 small text-muted d-flex align-items-center gap-2">
+            {% if p.avg_rating %}
+              {% with r=p.avg_rating|floatformat:1 rounded=p.avg_rating|floatformat:0 %}
+                <span class="fw-semibold">{{ r }}</span>
+                <span aria-hidden="true">
+                  {% for i in "12345" %}
+                    {% if forloop.counter <= rounded %}
+                      <i class="bi bi-star-fill"></i>
+                    {% else %}
+                      <i class="bi bi-star"></i>
+                    {% endif %}
+                  {% endfor %}
+                </span>
+                · {{ p.rating_count }} reseñas
+              {% endwith %}
+            {% else %}
+              Sin valoraciones
+            {% endif %}
+          </div>
 
-        <div class="d-flex gap-2">
-          <a href="{% url 'catalog:product_detail' p.producto_obj.pk %}" class="btn btn-primary">
-            <i class="bi bi-box-arrow-up-right"></i> Ver producto
-          </a>
-          {% if p.producto_obj.link %}
-            <a href="{{ p.producto_obj.link }}" target="_blank" class="btn btn-outline-primary">
-              <i class="bi bi-cart-check"></i> Ir a tienda
+          <div class="d-flex gap-2">
+            <a href="{% url 'catalog:product_detail' p.producto_obj.pk %}" class="btn btn-primary">
+              <i class="bi bi-box-arrow-up-right"></i> Ver producto
             </a>
-          {% endif %}
+            {% if p.producto_obj.link %}
+              <a href="{{ p.producto_obj.link }}" target="_blank" class="btn btn-outline-primary">
+                <i class="bi bi-cart-check"></i> Ir a tienda
+              </a>
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>
+    {% endfor %}
   </div>
-  {% empty %}
-  <p>No hay resultados.</p>
-  {% endfor %}
-</div>
+{% else %}
+  <div class="text-center py-5">
+    <div class="display-6 mb-2"><i class="bi bi-emoji-frown"></i></div>
+    <p class="text-muted mb-3">No encontramos productos con esos filtros.</p>
+    <a class="btn btn-outline-secondary" href="{% url 'catalog:product_list' %}">
+      Intentar de nuevo
+    </a>
+  </div>
+{% endif %}
+
+{# Paginación #}
+{% if is_paginated %}
+  <nav class="mt-4" aria-label="Paginación de productos">
+    <ul class="pagination justify-content-center">
+
+      {# Botón Anterior #}
+      <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+  <a class="page-link"
+     {% if page_obj.has_previous %}
+       href="{% if querystring %}?{{ querystring }}&page={{ page_obj.previous_page_number }}{% else %}?page={{ page_obj.previous_page_number }}{% endif %}"
+     {% else %}
+       href="#" aria-disabled="true" tabindex="-1"
+     {% endif %}>
+    Anterior
+  </a>
+</li>
+
+      {# Números de página (ventana ±2) #}
+      {% for num in paginator.page_range %}
+        {% if num == page_obj.number %}
+          <li class="page-item active" aria-current="page">
+            <span class="page-link">{{ num }}</span>
+          </li>
+        {% elif num >= page_obj.number|add:-2 and num <= page_obj.number|add:2 %}
+          <li class="page-item">
+            <a class="page-link"
+               href="{% if querystring %}?{{ querystring }}&page={{ num }}{% else %}?page={{ num }}{% endif %}">
+              {{ num }}
+            </a>
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+  <a class="page-link"
+     {% if page_obj.has_next %}
+       href="{% if querystring %}?{{ querystring }}&page={{ page_obj.next_page_number }}{% else %}?page={{ page_obj.next_page_number }}{% endif %}"
+     {% else %}
+       href="#" aria-disabled="true" tabindex="-1"
+     {% endif %}>
+    Siguiente
+  </a>
+</li>
+{% endif %}
+
 {% endblock %}

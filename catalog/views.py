@@ -1,10 +1,9 @@
 from decimal import Decimal, InvalidOperation
-
 from django.db.models import Q, Count, Avg
-from django.http import Http404
+from django.http import JsonResponse, Http404
 from django.shortcuts import render, get_object_or_404
 from django.utils.text import slugify
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Producto
 from .models import Proposal, Review
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -16,7 +15,12 @@ from django.utils import timezone
 from django.contrib.auth import login, logout
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm
-
+from urllib.parse import urlencode
+from .services.reporting import ReportColumn, DefaultReportFactory
+from io import BytesIO
+from django.http import FileResponse, HttpResponse
+from django.utils import timezone
+import csv
 
 class RegisterForm(forms.Form):
     username = forms.CharField(max_length=150)
@@ -174,44 +178,50 @@ def home(request):
 
 def product_list(request):
     """
-    Lista de productos con filtros por:
-    - q: texto (nombre/descripcion)
-    - category: categoría exacta (case-insensitive)
-    - store: tienda exacta (case-insensitive)
-    - min / max: precio vigente (considerando oferta activa) en rango
+    Lista de productos con filtros + ordenamiento + paginación.
+    Filtros: q, category, store, min, max, rating
+    Orden:   sort = name | price_asc | price_desc | rating
+    Página:  page = 1..N
     """
+    # --- Leer parámetros ---
     q = (request.GET.get("q") or "").strip()
     category = (request.GET.get("category") or "").strip()
     store = (request.GET.get("store") or "").strip()
     price_min = (request.GET.get("min") or "").strip()
     price_max = (request.GET.get("max") or "").strip()
-    # rating filter: minimum average rating (1-5)
     min_rating = (request.GET.get("rating") or "").strip()
+    sort = (request.GET.get("sort") or "name").strip()   # default: name
+    page = request.GET.get("page", 1)
 
-    # Base queryset, annotate with avg rating and count using DB-safe names
-    qs = Producto.objects.filter(disponible=True).annotate(db_avg_rating=Avg('reviews__rating'), db_rating_count=Count('reviews'))
+    # --- Base queryset + anotaciones de rating ---
+    qs = (
+        Producto.objects.filter(disponible=True)
+        .annotate(
+            db_avg_rating=Avg('reviews__rating'),
+            db_rating_count=Count('reviews')
+        )
+    )
 
+    # --- Filtros de texto/categoría/tienda ---
     if q:
         qs = qs.filter(Q(nombre__icontains=q) | Q(descripcion__icontains=q))
-
     if category:
         qs = qs.filter(categoria__iexact=category)
-
     if store:
         qs = qs.filter(tienda__iexact=store)
 
-    # Apply rating filter at DB level when possible
+    # --- Filtro por rating mínimo (DB) ---
     try:
         if min_rating:
             min_r = float(min_rating)
-            qs = qs.filter(db_avg_rating__isnull=False).filter(db_avg_rating__gte=min_r)
+            qs = qs.filter(db_avg_rating__isnull=False, db_avg_rating__gte=min_r)
     except ValueError:
-        # ignore invalid rating input
         pass
 
-    productos = qs.order_by("nombre")
+    # Orden base estable antes de construir lista
+    qs = qs.order_by("nombre")
 
-    # Parseo de límites de precio (trabajamos con Decimal)
+    # --- Rango de precios (sobre precio vigente) ---
     min_dec = max_dec = None
     try:
         if price_min:
@@ -219,36 +229,72 @@ def product_list(request):
         if price_max:
             max_dec = Decimal(price_max.replace(",", "."))
     except InvalidOperation:
-        # Si el usuario mete texto no numérico, ignoramos los límites
         min_dec = max_dec = None
 
-    # Construcción de items y filtro por precio vigente en Python
+    # --- Materializar items con precio vigente y aplicar rango ---
     items = []
-    for p in productos:
+    for p in qs:
         vigente = p.obtener_precio_actual()  # Decimal
         if min_dec is not None and vigente < min_dec:
             continue
         if max_dec is not None and vigente > max_dec:
             continue
-
         items.append({
             "name": p.nombre,
             "price": vigente,
             "store": p.tienda,
             "category": p.categoria,
-            "producto_obj": p,   # por si tu template lo usa
-            # map annotated values into simple keys used by template
+            "producto_obj": p,
             "avg_rating": getattr(p, 'db_avg_rating', None),
             "rating_count": getattr(p, 'db_rating_count', 0),
         })
 
+    # --- Ordenamiento en memoria (ya tenemos 'price' y 'avg_rating') ---
+    if sort == "price_asc":
+        items.sort(key=lambda x: (x["price"], x["name"]))
+    elif sort == "price_desc":
+        items.sort(key=lambda x: (x["price"], x["name"]), reverse=True)
+    elif sort == "rating":
+        # rating None al final; más reseñas primero si empata
+        def rate_key(it):
+            ar = it["avg_rating"]
+            # invertimos para que mayor rating quede antes
+            return (-(ar if ar is not None else -1), -it["rating_count"], it["name"])
+        items.sort(key=rate_key)
+    else:
+        # name (default)
+        items.sort(key=lambda x: x["name"])
+
+    # --- Paginación ---
+    paginator = Paginator(items, 9)  # 9 tarjetas por página
+    try:
+        page_obj = paginator.page(page)
+    except (PageNotAnInteger, EmptyPage):
+        page_obj = paginator.page(1)
+
+    # --- Querystring sin 'page' para reutilizar en links de paginación ---
+    qs_params = request.GET.copy()
+    qs_params.pop('page', None)
+    querystring = urlencode([(k, v) for k, v in qs_params.items() if v not in (None, "")])
+
+    # --- Contexto ---
     ctx = {
-        "q": q, "category": category, "store": store,
-        "price_min": price_min, "price_max": price_max,
-        "items": items,
+        "q": q,
+        "category": category,
+        "store": store,
+        "price_min": price_min,
+        "price_max": price_max,
         "min_rating": min_rating,
+        "sort": sort,
+        "page_obj": page_obj,                  # usar en template
+        "items": page_obj.object_list,         # tu HTML ya lo usa
+        "paginator": paginator,
+        "is_paginated": page_obj.has_other_pages(),
+        "querystring": querystring,            # para conservar filtros en los links
     }
     return render(request, "catalog/product_list.html", ctx)
+
+
 
 
 #  CATEGORÍAS 
@@ -380,3 +426,234 @@ def detalle_producto(request, pk):
         "producto": producto,
         "oferta": oferta,
     })
+
+# API JSON PROPIA
+def _product_to_dict(p: Producto):
+    oferta = p.obtener_oferta_activa()
+    return {
+        "id": p.id,
+        "nombre": p.nombre,
+        "descripcion": p.descripcion,
+        "categoria": p.categoria,
+        "tienda": p.tienda,
+        "link": p.link,
+        "precio_base": float(p.precio),
+        "precio_actual": float(p.obtener_precio_actual()),
+        "oferta": (
+            None if not oferta else {
+                "descuento_porcentaje": float(oferta.descuento_porcentaje),
+                "precio_fijo": (None if oferta.precio_fijo is None else float(oferta.precio_fijo)),
+                "activo": oferta.activo,
+            }
+        ),
+        "imagen_url": (p.imagen.url if p.imagen else None),
+        "disponible": p.disponible,
+        "creado": p.creado.isoformat(),
+        "detail_url": f"/products/{p.id}/",
+    }
+
+def api_products(request):
+    """
+    Lista JSON de productos disponibles con filtros:
+    ?q=...&category=...&store=...&min=...&max=...
+    El rango min/max se compara contra el PRECIO ACTUAL (incluye oferta).
+    """
+    qs = Producto.objects.filter(disponible=True)
+
+    q = (request.GET.get("q") or "").strip()
+    if q:
+        qs = qs.filter(Q(nombre__icontains=q) | Q(descripcion__icontains=q))
+
+    category = (request.GET.get("category") or "").strip()
+    if category:
+        qs = qs.filter(categoria__iexact=category)
+
+    store = (request.GET.get("store") or "").strip()
+    if store:
+        qs = qs.filter(tienda__iexact=store)
+
+    # min/max como Decimal, y filtramos por obtener_precio_actual() en Python
+    pmin_raw = request.GET.get("min")
+    pmax_raw = request.GET.get("max")
+    try:
+        pmin = Decimal(pmin_raw) if pmin_raw not in (None, "") else None
+    except (InvalidOperation, TypeError):
+        pmin = None
+    try:
+        pmax = Decimal(pmax_raw) if pmax_raw not in (None, "") else None
+    except (InvalidOperation, TypeError):
+        pmax = None
+
+    productos = list(qs)
+    if pmin is not None:
+        productos = [p for p in productos if p.obtener_precio_actual() >= pmin]
+    if pmax is not None:
+        productos = [p for p in productos if p.obtener_precio_actual() <= pmax]
+
+    data = [_product_to_dict(p) for p in productos]
+    return JsonResponse({"count": len(data), "results": data}, json_dumps_params={"ensure_ascii": False})
+
+def api_product_detail(request, pk: int):
+    try:
+        p = Producto.objects.get(pk=pk, disponible=True)
+    except Producto.DoesNotExist:
+        raise Http404("Producto no encontrado")
+    return JsonResponse(_product_to_dict(p), json_dumps_params={"ensure_ascii": False})
+
+
+
+try:
+    from reportlab.lib.pagesizes import letter
+    from reportlab.pdfgen import canvas
+    REPORTLAB_OK = True
+except Exception:
+    REPORTLAB_OK = False
+# --- NUEVA VISTA: exportación de productos ---
+def _filtered_items_for_export(request):
+    """
+    Repite la misma lógica de filtros/orden que product_list(),
+    pero devolviendo la lista 'items' ya armada para exportar.
+    """
+    q = (request.GET.get("q") or "").strip()
+    category = (request.GET.get("category") or "").strip()
+    store = (request.GET.get("store") or "").strip()
+    price_min = (request.GET.get("min") or "").strip()
+    price_max = (request.GET.get("max") or "").strip()
+    min_rating = (request.GET.get("rating") or "").strip()
+    sort = (request.GET.get("sort") or "name").strip()
+
+    qs = Producto.objects.filter(disponible=True).annotate(
+        db_avg_rating=Avg('reviews__rating'),
+        db_rating_count=Count('reviews')
+    )
+
+    if q:
+        qs = qs.filter(Q(nombre__icontains=q) | Q(descripcion__icontains=q))
+    if category:
+        qs = qs.filter(categoria__iexact=category)
+    if store:
+        qs = qs.filter(tienda__iexact=store)
+
+    try:
+        if min_rating:
+            min_r = float(min_rating)
+            qs = qs.filter(db_avg_rating__isnull=False, db_avg_rating__gte=min_r)
+    except ValueError:
+        pass
+
+    productos = qs.order_by("nombre")
+
+    # Rango de precio vigente
+    min_dec = max_dec = None
+    try:
+        if price_min:
+            min_dec = Decimal(price_min.replace(",", "."))
+        if price_max:
+            max_dec = Decimal(price_max.replace(",", "."))
+    except InvalidOperation:
+        min_dec = max_dec = None
+
+    items = []
+    for p in productos:
+        vigente = p.obtener_precio_actual()
+        if min_dec is not None and vigente < min_dec:
+            continue
+        if max_dec is not None and vigente > max_dec:
+            continue
+        items.append({
+            "name": p.nombre,
+            "price": vigente,
+            "store": p.tienda,
+            "category": p.categoria,
+            "producto_obj": p,
+            "avg_rating": getattr(p, 'db_avg_rating', None),
+            "rating_count": getattr(p, 'db_rating_count', 0),
+        })
+
+    # Orden
+    if sort == "price_asc":
+        items.sort(key=lambda x: (x["price"], x["name"]))
+    elif sort == "price_desc":
+        items.sort(key=lambda x: (x["price"], x["name"]), reverse=True)
+    elif sort == "rating":
+        items.sort(key=lambda x: (-(x["avg_rating"] or -1), -x["rating_count"], x["name"]))
+    else:
+        items.sort(key=lambda x: x["name"])
+
+    return items
+
+
+def export_products_report(request):
+    """
+    /products/export/?format=pdf|xlsx  (xlsx = CSV con mime de Excel)
+    Conserva los mismos filtros del listado.
+    """
+    fmt = (request.GET.get("format") or "xlsx").lower()
+    items = _filtered_items_for_export(request)
+
+    timestamp = timezone.now().strftime("%Y%m%d_%H%M%S")
+
+    if fmt == "pdf":
+        if not REPORTLAB_OK:
+            return HttpResponse(
+                "Para exportar a PDF instala reportlab: pip install reportlab",
+                content_type="text/plain",
+                status=500
+            )
+
+        buffer = BytesIO()
+        c = canvas.Canvas(buffer, pagesize=letter)
+        width, height = letter
+
+        title = f"Reporte de productos ({timestamp})"
+        c.setFont("Helvetica-Bold", 14)
+        c.drawString(40, height - 50, title)
+
+        c.setFont("Helvetica", 10)
+        y = height - 80
+        line_height = 14
+
+        # Encabezados
+        c.drawString(40, y, "Nombre")
+        c.drawString(280, y, "Categoría")
+        c.drawString(380, y, "Tienda")
+        c.drawRightString(560, y, "Precio vigente")
+        y -= line_height
+
+        for it in items:
+            if y < 60:  # salto de página simple
+                c.showPage()
+                c.setFont("Helvetica", 10)
+                y = height - 50
+
+            nombre = (it["name"] or "")[:45]
+            c.drawString(40, y, nombre)
+            c.drawString(280, y, (it["category"] or "")[:18])
+            c.drawString(380, y, (it["store"] or "")[:18])
+            c.drawRightString(560, y, f"${float(it['price']):,.2f}")
+            y -= line_height
+
+        c.showPage()
+        c.save()
+        buffer.seek(0)
+
+        filename = f"productos_{timestamp}.pdf"
+        return FileResponse(buffer, as_attachment=True, filename=filename)
+
+    # --- XLSX “rápido” vía CSV (abre en Excel sin problema) ---
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    filename = f"productos_{timestamp}.csv"
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response)
+    writer.writerow(["Nombre", "Categoría", "Tienda", "Precio vigente", "Rating prom.", "N° reseñas"])
+    for it in items:
+        writer.writerow([
+            it["name"],
+            it["category"] or "",
+            it["store"] or "",
+            f"{float(it['price']):.2f}",
+            (f"{float(it['avg_rating']):.1f}" if it["avg_rating"] is not None else ""),
+            it["rating_count"] or 0,
+        ])
+    return response
