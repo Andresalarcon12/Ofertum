@@ -18,11 +18,11 @@
       {% endif %}
 
       <div class="mb-3">
-        <strong>Precio base:</strong> ${{ producto.precio }}
+        <strong>Precio base:</strong> ${{ producto.precio|precio_format }}
       </div>
 
       <div class="mb-3">
-        <strong>Precio con descuento:</strong> ${{ producto.obtener_precio_actual }}
+        <strong>Precio con descuento:</strong> ${{ producto.obtener_precio_actual|precio_format }}
       </div>
 
       <div class="mb-3">

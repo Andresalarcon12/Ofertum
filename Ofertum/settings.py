@@ -100,3 +100,8 @@ LANGUAGES = [
 LOCALE_PATHS = [
     BASE_DIR / 'locale',
 ]
+# Login/Logout redirect URLs
+LOGIN_REDIRECT_URL = 'catalog:product_list'
+LOGOUT_REDIRECT_URL = 'catalog:product_list'
+LOGIN_URL = 'catalog:login'
+

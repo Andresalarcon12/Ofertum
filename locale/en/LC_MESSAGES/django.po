@@ -327,3 +327,26 @@ msgstr "Could not connect to the external API. Check your internet connection."
 
 msgid "Error al procesar los datos:"
 msgstr "Error processing data:"
+
+# Footer
+msgid "Todos los derechos reservados."
+msgstr "All rights reserved."
+
+msgid "Enlaces"
+msgstr "Links"
+
+msgid "Sugerir Producto"
+msgstr "Suggest Product"
+
+msgid "Contacto"
+msgstr "Contact"
+
+msgid "Colombia"
+msgstr "Colombia"
+
+msgid "Hecho con"
+msgstr "Made with"
+
+msgid "en Colombia"
+msgstr "in Colombia"
+

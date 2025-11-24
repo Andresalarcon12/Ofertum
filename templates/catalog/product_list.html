@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load humanize %}
 {% load i18n %}
+{% load price_filters %}
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block title %}Ofertum · {% trans "Productos" %}{% endblock %}
@@ -169,15 +170,15 @@
             {% if oferta %}
               <div class="mb-1">
                 <span class="text-muted text-decoration-line-through small me-2">
-                  ${{ p.producto_obj.precio|floatformat:2 }}
+                  ${{ p.producto_obj.precio|precio_format }}
                 </span>
-                <span class="price">${{ p.price|floatformat:2 }}</span>
+                <span class="price">${{ p.price|precio_format }}</span>
               </div>
               <span class="badge-spark mb-3 d-inline-block">
                 <i class="bi bi-tag-fill me-1"></i> {% trans "Oferta activa" %}
               </span>
             {% else %}
-              <div class="price mb-3">${{ p.price|floatformat:2 }}</div>
+              <div class="price mb-3">${{ p.price|precio_format }}</div>
             {% endif %}
           {% endwith %}
 

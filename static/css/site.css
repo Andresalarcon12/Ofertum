@@ -115,34 +115,79 @@ footer{ color:var(--muted); }
 
 /* LANGUAGE SELECTOR */
 .language-selector {
-  background-color: rgba(255, 255, 255, 0.95) !important;
-  border: 2px solid rgba(255, 255, 255, 0.9) !important;
-  color: var(--brand1) !important;
+  background: linear-gradient(90deg, var(--brand1), var(--brand2)) !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
   font-weight: 700;
   padding: 0.25rem 1.75rem 0.25rem 0.5rem;
   transition: all 0.2s ease;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
   min-width: 85px;
 }
 
 .language-selector:hover {
-  background-color: white !important;
-  border-color: white !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(108, 99, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.5) !important;
 }
 
 .language-selector:focus {
-  background-color: white !important;
-  border-color: var(--brand2) !important;
-  box-shadow: 0 0 0 0.2rem rgba(0, 188, 212, 0.25);
+  background: linear-gradient(90deg, var(--brand1), var(--brand2)) !important;
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, 0.3);
   outline: none;
 }
 
 .language-selector option {
-  background-color: white;
-  color: var(--brand1);
+  background: linear-gradient(135deg, var(--brand1), var(--brand2));
+  color: white;
   font-weight: 600;
   padding: 8px;
+}
+
+/* AUTH BUTTONS */
+.btn-auth {
+  background: linear-gradient(90deg, var(--brand1), var(--brand2)) !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+  font-weight: 600;
+  padding: 0.375rem 1rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+}
+
+.btn-auth:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(108, 99, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  color: white !important;
+}
+
+.btn-auth-primary {
+  background: linear-gradient(90deg, var(--brand2), var(--brand1)) !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+  font-weight: 600;
+  padding: 0.375rem 1rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0, 188, 212, 0.3);
+}
+
+.btn-auth-primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 188, 212, 0.4);
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  color: white !important;
 }

@@ -4,6 +4,7 @@ from django.http import JsonResponse, Http404
 from django.shortcuts import render, get_object_or_404
 from django.utils.text import slugify
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.urls import reverse
 from .models import Producto
 from .models import Proposal, Review
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -429,15 +430,39 @@ def detalle_producto(request, pk):
     })
 
 # API JSON PROPIA
-def _product_to_dict(p: Producto):
+def _product_to_dict(p: Producto, request=None):
+    """Convierte un producto a diccionario para JSON API.
+    
+    Incluye:
+    - Información básica del producto
+    - Precio base y precio actual (con oferta si aplica)
+    - URL de imagen
+    - Enlace directo al detalle del producto (URL completa)
+    """
     oferta = p.obtener_oferta_activa()
+    
+    # Construir URL absoluta para el detalle del producto
+    detail_path = reverse('catalog:product_detail', args=[p.pk])
+    if request:
+        detail_url = request.build_absolute_uri(detail_path)
+    else:
+        detail_url = detail_path
+    
+    # URL absoluta de la imagen si existe
+    imagen_url = None
+    if p.imagen:
+        if request:
+            imagen_url = request.build_absolute_uri(p.imagen.url)
+        else:
+            imagen_url = p.imagen.url
+    
     return {
         "id": p.id,
         "nombre": p.nombre,
         "descripcion": p.descripcion,
         "categoria": p.categoria,
         "tienda": p.tienda,
-        "link": p.link,
+        "link": p.link,  # Link externo del producto si existe
         "precio_base": float(p.precio),
         "precio_actual": float(p.obtener_precio_actual()),
         "oferta": (
@@ -447,33 +472,55 @@ def _product_to_dict(p: Producto):
                 "activo": oferta.activo,
             }
         ),
-        "imagen_url": (p.imagen.url if p.imagen else None),
+        "imagen_url": imagen_url,
         "disponible": p.disponible,
         "creado": p.creado.isoformat(),
-        "detail_url": f"/products/{p.id}/",
+        "detail_url": detail_url,  # URL completa para acceder al producto
     }
 
 def api_products(request):
     """
-    Lista JSON de productos disponibles con filtros:
-    ?q=...&category=...&store=...&min=...&max=...
-    El rango min/max se compara contra el PRECIO ACTUAL (incluye oferta).
+    Servicio web JSON que provee información de productos disponibles.
+    
+    Filtros disponibles:
+    - ?q=texto : Búsqueda en nombre y descripción
+    - ?category=categoria : Filtrar por categoría
+    - ?store=tienda : Filtrar por tienda
+    - ?min=precio : Precio mínimo (sobre precio actual con oferta)
+    - ?max=precio : Precio máximo (sobre precio actual con oferta)
+    - ?disponibles=true : Solo productos disponibles (por defecto true)
+    
+    Retorna JSON con:
+    - total: cantidad de productos
+    - productos: lista de productos con toda la información
+      - Cada producto incluye detail_url para acceso directo
+    
+    Ejemplo de consumo por otros equipos:
+    GET /api/products/?category=Electrónica&min=50&max=500
     """
-    qs = Producto.objects.filter(disponible=True)
+    # Filtro base - por defecto solo disponibles
+    disponibles = request.GET.get("disponibles", "true").lower() == "true"
+    if disponibles:
+        qs = Producto.objects.filter(disponible=True)
+    else:
+        qs = Producto.objects.all()
 
+    # Búsqueda de texto
     q = (request.GET.get("q") or "").strip()
     if q:
         qs = qs.filter(Q(nombre__icontains=q) | Q(descripcion__icontains=q))
 
+    # Filtro por categoría
     category = (request.GET.get("category") or "").strip()
     if category:
         qs = qs.filter(categoria__iexact=category)
 
+    # Filtro por tienda
     store = (request.GET.get("store") or "").strip()
     if store:
         qs = qs.filter(tienda__iexact=store)
 
-    # min/max como Decimal, y filtramos por obtener_precio_actual() en Python
+    # Filtros de precio (sobre precio actual que incluye ofertas)
     pmin_raw = request.GET.get("min")
     pmax_raw = request.GET.get("max")
     try:
@@ -485,21 +532,42 @@ def api_products(request):
     except (InvalidOperation, TypeError):
         pmax = None
 
+    # Aplicar filtros de precio en Python (porque obtener_precio_actual no es campo DB)
     productos = list(qs)
     if pmin is not None:
         productos = [p for p in productos if p.obtener_precio_actual() >= pmin]
     if pmax is not None:
         productos = [p for p in productos if p.obtener_precio_actual() <= pmax]
 
-    data = [_product_to_dict(p) for p in productos]
-    return JsonResponse({"count": len(data), "results": data}, json_dumps_params={"ensure_ascii": False})
+    # Convertir a diccionarios con URLs absolutas
+    data = [_product_to_dict(p, request) for p in productos]
+    
+    return JsonResponse({
+        "total": len(data),
+        "productos": data  # Cambio de "results" a "productos" para mayor claridad
+    }, json_dumps_params={"ensure_ascii": False})
 
 def api_product_detail(request, pk: int):
+    """
+    Detalle de un producto específico en formato JSON.
+    
+    GET /api/products/<id>/
+    
+    Retorna toda la información del producto incluyendo:
+    - Precio base y precio actual (con ofertas aplicadas)
+    - URL de imagen
+    - Enlace directo al detalle del producto
+    - Información de la oferta activa si existe
+    """
     try:
         p = Producto.objects.get(pk=pk, disponible=True)
     except Producto.DoesNotExist:
-        raise Http404("Producto no encontrado")
-    return JsonResponse(_product_to_dict(p), json_dumps_params={"ensure_ascii": False})
+        return JsonResponse({
+            "error": "Producto no encontrado",
+            "detail": f"No existe un producto disponible con id {pk}"
+        }, status=404, json_dumps_params={"ensure_ascii": False})
+    
+    return JsonResponse(_product_to_dict(p, request), json_dumps_params={"ensure_ascii": False})
 
 
 
