@@ -1,19 +1,44 @@
 {% extends "base.html" %}
-{% block title %}Ofertum · Inicio{% endblock %}
+{% load i18n %}
+
+{% block title %}Ofertum · {% trans "Inicio" %}{% endblock %}
 
 {% block content %}
+{% get_current_language as LANGUAGE_CODE %}
+
 <section class="hero mb-5 reveal-up">
   <div class="row align-items-center">
     <div class="col-lg-8">
-      <h1 class="display-5 fw-bold mb-3">Encuentra las mejores ofertas</h1>
+
+      {# TÍTULO PRINCIPAL #}
+      <h1 class="display-5 fw-bold mb-3">
+        {% if LANGUAGE_CODE == "en" %}
+          Find the best deals
+        {% else %}
+          Encuentra las mejores ofertas
+        {% endif %}
+      </h1>
+
+      {# SUBTÍTULO #}
       <p class="fs-5 text-secondary mb-4">
-        Filtra por categoría, tienda o precio. Sube sugerencias y vota con reseñas.
+        {% if LANGUAGE_CODE == "en" %}
+          Filter by category, store or price. Submit suggestions and vote with reviews.
+        {% else %}
+          Filtra por categoría, tienda o precio. Sube sugerencias y vota con reseñas.
+        {% endif %}
       </p>
+
+      {# BOTÓN PRINCIPAL #}
       <a class="btn btn-primary btn-lg"
          href="{% url 'catalog:product_list' %}"
          role="button"
          style="position:relative; z-index:10; pointer-events:auto;">
-        <i class="bi bi-lightning-charge-fill me-1"></i> Ver productos
+        <i class="bi bi-lightning-charge-fill me-1"></i>
+        {% if LANGUAGE_CODE == "en" %}
+          View products
+        {% else %}
+          Ver productos
+        {% endif %}
       </a>
     </div>
 
@@ -21,20 +46,58 @@
       <div class="row g-3">
         <div class="col-6">
           <div class="p-3 bg-white rounded-4 shadow-sm text-center">
-            <div class="h3 mb-0">Muchas ofertas+</div>
-            <div class="text-muted">Ofertas</div>
+            <div class="h3 mb-0">
+              {% if LANGUAGE_CODE == "en" %}
+                Lots of deals+
+              {% else %}
+                Muchas ofertas+
+              {% endif %}
+            </div>
+            <div class="text-muted">
+              {% if LANGUAGE_CODE == "en" %}
+                Deals
+              {% else %}
+                Ofertas
+              {% endif %}
+            </div>
           </div>
         </div>
+
         <div class="col-6">
           <div class="p-3 bg-white rounded-4 shadow-sm text-center">
-            <div class="h3 mb-0">Decenas de tiendas</div>
-            <div class="text-muted">Tiendas</div>
+            <div class="h3 mb-0">
+              {% if LANGUAGE_CODE == "en" %}
+                Dozens of stores
+              {% else %}
+                Decenas de tiendas
+              {% endif %}
+            </div>
+            <div class="text-muted">
+              {% if LANGUAGE_CODE == "en" %}
+                Stores
+              {% else %}
+                Tiendas
+              {% endif %}
+            </div>
           </div>
         </div>
+
         <div class="col-12">
           <div class="p-3 bg-white rounded-4 shadow-sm text-center">
-            <div class="h3 mb-0">Opciones para elegir</div>
-            <div class="text-muted">Categorías</div>
+            <div class="h3 mb-0">
+              {% if LANGUAGE_CODE == "en" %}
+                Options to choose from
+              {% else %}
+                Opciones para elegir
+              {% endif %}
+            </div>
+            <div class="text-muted">
+              {% if LANGUAGE_CODE == "en" %}
+                Categories
+              {% else %}
+                Categorías
+              {% endif %}
+            </div>
           </div>
         </div>
       </div>

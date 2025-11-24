@@ -1,0 +1,24 @@
+{
+  "es": {
+    "home.hero_title": "Encuentra las mejores ofertas",
+    "home.hero_subtitle": "Filtra por categoría, tienda o precio. Sube sugerencias y vota con reseñas.",
+    "home.cta_view_products": "Ver productos",
+    "home.card_many_deals_title": "Muchas ofertas+",
+    "home.card_many_deals_sub": "Ofertas",
+    "home.card_many_stores_title": "Decenas de tiendas",
+    "home.card_many_stores_sub": "Tiendas",
+    "home.card_many_categories_title": "Opciones para elegir",
+    "home.card_many_categories_sub": "Categorías"
+  },
+  "en": {
+    "home.hero_title": "Find the best deals",
+    "home.hero_subtitle": "Filter by category, store or price. Submit suggestions and vote with reviews.",
+    "home.cta_view_products": "View products",
+    "home.card_many_deals_title": "Lots of deals+",
+    "home.card_many_deals_sub": "Deals",
+    "home.card_many_stores_title": "Dozens of stores",
+    "home.card_many_stores_sub": "Stores",
+    "home.card_many_categories_title": "Options to choose from",
+    "home.card_many_categories_sub": "Categories"
+  }
+}

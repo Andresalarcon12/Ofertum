@@ -26,4 +26,8 @@ urlpatterns = [
     
     path("tiendas/", views.stores, name="stores"),
     path("tiendas/<slug:slug>/", views.store_detail, name="store_detail"),
+        path("api/products/", views.api_products, name="api_products"),
+        path("api/products/<int:pk>/", views.api_product_detail, name="api_product_detail"),
+        
+
 ]

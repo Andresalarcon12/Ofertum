@@ -1,6 +1,8 @@
 {% load static %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 <!doctype html>
-<html lang="es">
+<html lang="{{ LANGUAGE_CODE }}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,7 +13,6 @@
     <link rel="icon" href="{% static 'img/logo.png' %}">
     <link rel="stylesheet" href="{% static 'css/site.css' %}">
     <style>
-      
       #bg-orbs{
         position: fixed; inset: 0;
         z-index: -1; opacity:.9; pointer-events:none;
@@ -28,28 +29,70 @@
           <img src="{% static 'img/logo.png' %}" alt="Ofertum" width="28" height="28" style="filter:drop-shadow(0 1px 1px rgba(0,0,0,.15))">
           <strong>Ofertum</strong>
         </a>
-        <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+
+        <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="{% trans 'Alternar navegación' %}">
           <span class="navbar-toggler-icon"></span>
         </button>
+
         <div id="nav" class="collapse navbar-collapse">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item"><a class="nav-link" href="{% url 'catalog:product_list' %}"><i class="bi bi-grid"></i> Productos</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'catalog:categories' %}"><i class="bi bi-tags"></i> Categorías</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'catalog:stores' %}">Tiendas</a>
-
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'catalog:product_list' %}">
+                <i class="bi bi-grid"></i> {% trans "Productos" %}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'catalog:categories' %}">
+                <i class="bi bi-tags"></i> {% trans "Categorías" %}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'catalog:stores' %}">
+                {% trans "Tiendas" %}
+              </a>
+            </li>
           </ul>
+
           <form class="d-flex" role="search" action="{% url 'catalog:product_list' %}">
-            <input class="form-control me-2" type="search" name="q" placeholder="Buscar...">
-            <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Buscar</button>
+            <input class="form-control me-2" type="search" name="q" placeholder="{% trans 'Buscar...' %}">
+            <button class="btn btn-primary" type="submit">
+              <i class="bi bi-search"></i> {% trans "Buscar" %}
+            </button>
           </form>
+
           <div class="ms-3 d-flex align-items-center">
+
+            <!-- Selector de idioma -->
+            <form action="{% url 'set_language' %}" method="post" class="ms-2 d-flex align-items-center">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <select name="language" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="es" {% if LANGUAGE_CODE == 'es' %}selected{% endif %}>ES</option>
+                <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>EN</option>
+              </select>
+            </form>
+
             {% if request.user.is_authenticated %}
-              <span class="me-2">Hola, {{ request.user.username }}</span>
-              <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'catalog:admin_proposals' %}">{% if request.user.is_staff %}Moderación{% else %}Mi cuenta{% endif %}</a>
-              <a class="btn btn-outline-danger btn-sm" href="{% url 'catalog:logout' %}">Cerrar sesión</a>
+              <span class="ms-2 me-2">
+                {% trans "Hola," %} {{ request.user.username }}
+              </span>
+              <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'catalog:admin_proposals' %}">
+                {% if request.user.is_staff %}
+                  {% trans "Moderación" %}
+                {% else %}
+                  {% trans "Mi cuenta" %}
+                {% endif %}
+              </a>
+              <a class="btn btn-outline-danger btn-sm" href="{% url 'catalog:logout' %}">
+                {% trans "Cerrar sesión" %}
+              </a>
             {% else %}
-              <a class="btn btn-outline-primary btn-sm me-2" href="{% url 'catalog:register' %}">Registrarse</a>
-              <a class="btn btn-primary btn-sm" href="{% url 'catalog:login' %}">Iniciar sesión</a>
+              <a class="btn btn-outline-primary btn-sm me-2" href="{% url 'catalog:register' %}">
+                {% trans "Registrarse" %}
+              </a>
+              <a class="btn btn-primary btn-sm" href="{% url 'catalog:login' %}">
+                {% trans "Iniciar sesión" %}
+              </a>
             {% endif %}
           </div>
         </div>
@@ -67,14 +110,8 @@
 
     <footer class="border-top bg-white py-3">
       <div class="container small d-flex justify-content-between">
-        <span>© 2025 Ofertum</span>
-        <span>Agregador de descuentos</span>
-      </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+         <span>{% trans "Agregador de descuentos" %}</span>
     <script>
-      
       const els = document.querySelectorAll('.reveal-up');
       const io = new IntersectionObserver(entries=>{
         entries.forEach(e=>{

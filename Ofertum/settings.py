@@ -28,6 +28,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -73,16 +74,29 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Internationalization
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+from django.utils.translation import gettext_lazy as _
+
+LANGUAGE_CODE = 'es'        # idioma por defecto
+TIME_ZONE = 'UTC'           # o 'America/Bogota'
 USE_I18N = True
 USE_TZ = True
 
 # Static & Media
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']   # archivos estáticos para dev
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'            # subidas de usuarios
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']  # para desarrollo (archivos en ./static)
 
-# Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'           # subidas de usuarios
+
+# carpeta donde collectstatic junta todo
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+
+LANGUAGES = [
+    ('es', _('Spanish')),
+    ('en', _('English')),
+]
+
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',
+]
