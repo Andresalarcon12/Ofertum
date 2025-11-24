@@ -21,6 +21,7 @@ from io import BytesIO
 from django.http import FileResponse, HttpResponse
 from django.utils import timezone
 import csv
+import requests
 
 class RegisterForm(forms.Form):
     username = forms.CharField(max_length=150)
@@ -657,3 +658,131 @@ def export_products_report(request):
             it["rating_count"] or 0,
         ])
     return response
+
+
+def partner_products(request):
+    """
+    Vista que muestra productos de API externa de equipo aliado.
+    Endpoint: http://13.218.169.6/api/productos/
+    """
+    partner_api_url = "http://13.218.169.6/api/productos/"
+    
+    # Parámetros de filtro
+    q = (request.GET.get("q") or "").strip()
+    category = (request.GET.get("category") or "").strip()
+    store = (request.GET.get("store") or "").strip()
+    price_min = (request.GET.get("min") or "").strip()
+    price_max = (request.GET.get("max") or "").strip()
+    sort = (request.GET.get("sort") or "name").strip()
+    page = request.GET.get("page", 1)
+    
+    items = []
+    error_message = None
+    
+    try:
+        # Hacer petición a la API externa con timeout
+        response = requests.get(partner_api_url, timeout=10)
+        response.raise_for_status()
+        
+        data = response.json()
+        
+        # Extraer productos de la respuesta (ajustar según estructura de la API)
+        if isinstance(data, dict) and 'results' in data:
+            productos = data['results']
+        elif isinstance(data, list):
+            productos = data
+        else:
+            productos = []
+        
+        # Procesar y filtrar productos
+        for p in productos:
+            # Mapeo de campos según la estructura real de la API
+            nombre = p.get('nombreProducto', p.get('nombre', p.get('name', 'Sin nombre')))
+            descripcion = p.get('descripcion', p.get('description', ''))
+            categoria = p.get('tipoProducto', p.get('categoria', p.get('category', '')))
+            tienda = p.get('marcaProducto', p.get('tienda', p.get('store', '')))
+            precio = float(p.get('precioDeProducto', p.get('precio', p.get('price', p.get('precio_base', p.get('precio_actual', 0))))))
+            imagen_path = p.get('imagenProducto', p.get('imagen', p.get('image', p.get('imagen_url', ''))))
+            # Construir URL completa de imagen si es ruta relativa
+            if imagen_path and not imagen_path.startswith('http'):
+                imagen = f"http://13.218.169.6{imagen_path}"
+            else:
+                imagen = imagen_path
+            link = p.get('link', p.get('url', ''))
+            product_id = p.get('idProducto', p.get('id', 0))
+            
+            # Aplicar filtros
+            if q and q.lower() not in nombre.lower() and q.lower() not in descripcion.lower():
+                continue
+            if category and category.lower() != categoria.lower():
+                continue
+            if store and store.lower() != tienda.lower():
+                continue
+            
+            # Filtro de precio
+            try:
+                if price_min and precio < float(price_min.replace(",", ".")):
+                    continue
+                if price_max and precio > float(price_max.replace(",", ".")):
+                    continue
+            except (ValueError, InvalidOperation):
+                pass
+            
+            items.append({
+                "id": product_id,
+                "name": nombre,
+                "description": descripcion,
+                "price": Decimal(str(precio)),
+                "store": tienda,
+                "category": categoria,
+                "image": imagen,
+                "link": link,
+                "avg_rating": None,
+                "rating_count": 0,
+            })
+    
+    except requests.exceptions.Timeout:
+        error_message = "La API externa tardó demasiado en responder. Por favor, intenta más tarde."
+    except requests.exceptions.ConnectionError:
+        error_message = "No se pudo conectar con la API externa. Verifica tu conexión a internet."
+    except requests.exceptions.RequestException as e:
+        error_message = f"Error al conectar con la API externa: {str(e)}"
+    except Exception as e:
+        error_message = f"Error al procesar los datos: {str(e)}"
+    
+    # Ordenamiento
+    if sort == "price_asc":
+        items.sort(key=lambda x: (x["price"], x["name"]))
+    elif sort == "price_desc":
+        items.sort(key=lambda x: (x["price"], x["name"]), reverse=True)
+    else:
+        items.sort(key=lambda x: x["name"])
+    
+    # Paginación
+    paginator = Paginator(items, 9)
+    try:
+        page_obj = paginator.page(page)
+    except (PageNotAnInteger, EmptyPage):
+        page_obj = paginator.page(1)
+    
+    # Querystring para paginación
+    qs_params = request.GET.copy()
+    qs_params.pop('page', None)
+    querystring = urlencode([(k, v) for k, v in qs_params.items() if v not in (None, "")])
+    
+    ctx = {
+        "q": q,
+        "category": category,
+        "store": store,
+        "price_min": price_min,
+        "price_max": price_max,
+        "sort": sort,
+        "page_obj": page_obj,
+        "items": page_obj.object_list,
+        "paginator": paginator,
+        "is_paginated": page_obj.has_other_pages(),
+        "querystring": querystring,
+        "error_message": error_message,
+        "is_partner_page": True,
+    }
+    return render(request, "catalog/partner_products.html", ctx)

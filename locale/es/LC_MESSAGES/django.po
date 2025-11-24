@@ -1,0 +1,329 @@
+# TRADUCCIONES EN ESPAÑOL PARA EL PROYECTO OFERTUM
+# Copyright (C) 2025
+# Este archivo se distribuye bajo la misma licencia que el paquete Ofertum.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Ofertum 2.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-23 23:00+0000\n"
+"PO-Revision-Date: 2025-11-23 23:00+0000\n"
+"Last-Translator: Equipo Ofertum\n"
+"Language-Team: Español\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# Plantilla base - Navegación
+msgid "Alternar navegación"
+msgstr "Alternar navegación"
+
+msgid "Productos"
+msgstr "Productos"
+
+msgid "Categorías"
+msgstr "Categorías"
+
+msgid "Tiendas"
+msgstr "Tiendas"
+
+msgid "Páginas Aliadas"
+msgstr "Páginas Aliadas"
+
+msgid "Buscar..."
+msgstr "Buscar..."
+
+msgid "Buscar"
+msgstr "Buscar"
+
+msgid "Hola,"
+msgstr "Hola,"
+
+msgid "Moderación"
+msgstr "Moderación"
+
+msgid "Mi cuenta"
+msgstr "Mi cuenta"
+
+msgid "Cerrar sesión"
+msgstr "Cerrar sesión"
+
+msgid "Registrarse"
+msgstr "Registrarse"
+
+msgid "Iniciar sesión"
+msgstr "Iniciar sesión"
+
+msgid "Agregador de descuentos"
+msgstr "Agregador de descuentos"
+
+# Página de inicio
+msgid "Inicio"
+msgstr "Inicio"
+
+# Lista de productos
+msgid "Crear propuesta"
+msgstr "Crear propuesta"
+
+msgid "Limpiar filtros"
+msgstr "Limpiar filtros"
+
+msgid "PDF"
+msgstr "PDF"
+
+msgid "Excel"
+msgstr "Excel"
+
+msgid "Min"
+msgstr "Mín"
+
+msgid "Max"
+msgstr "Máx"
+
+msgid "Nombre o descripción..."
+msgstr "Nombre o descripción..."
+
+msgid "Categoría"
+msgstr "Categoría"
+
+msgid "Tienda"
+msgstr "Tienda"
+
+msgid "Filtrar por rating"
+msgstr "Filtrar por valoración"
+
+msgid "Ordenar por"
+msgstr "Ordenar por"
+
+msgid "Aplicar"
+msgstr "Aplicar"
+
+msgid "Nombre (A–Z)"
+msgstr "Nombre (A–Z)"
+
+msgid "Precio: menor a mayor"
+msgstr "Precio: menor a mayor"
+
+msgid "Precio: mayor a menor"
+msgstr "Precio: mayor a menor"
+
+msgid "Mejor valorados"
+msgstr "Mejor valorados"
+
+msgid "Rating"
+msgstr "Valoración"
+
+msgid "—"
+msgstr "—"
+
+msgid "estrella y más"
+msgstr "estrella y más"
+
+msgid "estrellas y más"
+msgstr "estrellas y más"
+
+msgid "Sin categoría"
+msgstr "Sin categoría"
+
+msgid "Oferta activa"
+msgstr "Oferta activa"
+
+msgid "reseñas"
+msgstr "reseñas"
+
+msgid "Sin valoraciones"
+msgstr "Sin valoraciones"
+
+msgid "Ver producto"
+msgstr "Ver producto"
+
+msgid "Ir a tienda"
+msgstr "Ir a tienda"
+
+msgid "No encontramos productos con esos filtros."
+msgstr "No encontramos productos con esos filtros."
+
+msgid "Intentar de nuevo"
+msgstr "Intentar de nuevo"
+
+msgid "Anterior"
+msgstr "Anterior"
+
+msgid "Siguiente"
+msgstr "Siguiente"
+
+# Página de productos aliados
+msgid "Estos productos provienen de nuestros socios aliados. Los precios y disponibilidad pueden variar."
+msgstr "Estos productos provienen de nuestros socios aliados. Los precios y disponibilidad pueden variar."
+
+msgid "Producto aliado"
+msgstr "Producto aliado"
+
+msgid "Sin enlace"
+msgstr "Sin enlace"
+
+# Detalle de producto
+msgid "Precio base"
+msgstr "Precio base"
+
+msgid "Precio con oferta"
+msgstr "Precio con oferta"
+
+msgid "Descripción"
+msgstr "Descripción"
+
+msgid "Disponibilidad"
+msgstr "Disponibilidad"
+
+msgid "Disponible"
+msgstr "Disponible"
+
+msgid "No disponible"
+msgstr "No disponible"
+
+msgid "Valoraciones"
+msgstr "Valoraciones"
+
+msgid "Agregar reseña"
+msgstr "Agregar reseña"
+
+msgid "Editar reseña"
+msgstr "Editar reseña"
+
+# Categorías
+msgid "productos"
+msgstr "productos"
+
+msgid "producto"
+msgstr "producto"
+
+# Tiendas
+msgid "Ver tienda"
+msgstr "Ver tienda"
+
+# Formularios
+msgid "Enviar"
+msgstr "Enviar"
+
+msgid "Cancelar"
+msgstr "Cancelar"
+
+msgid "Guardar"
+msgstr "Guardar"
+
+msgid "Eliminar"
+msgstr "Eliminar"
+
+# Mensajes
+msgid "Cuenta creada y sesión iniciada."
+msgstr "Cuenta creada y sesión iniciada."
+
+msgid "Corrija los errores del formulario."
+msgstr "Corrija los errores del formulario."
+
+msgid "Sesión cerrada."
+msgstr "Sesión cerrada."
+
+msgid "Propuesta enviada y está pendiente de revisión."
+msgstr "Propuesta enviada y está pendiente de revisión."
+
+msgid "Por favor corrija los errores del formulario."
+msgstr "Por favor corrija los errores del formulario."
+
+msgid "Propuesta aprobada y convertida en producto."
+msgstr "Propuesta aprobada y convertida en producto."
+
+msgid "Propuesta rechazada."
+msgstr "Propuesta rechazada."
+
+msgid "Acción inválida o propuesta ya moderada."
+msgstr "Acción inválida o propuesta ya moderada."
+
+msgid "Reseña guardada."
+msgstr "Reseña guardada."
+
+msgid "Ya existe una reseña para este producto."
+msgstr "Ya existe una reseña para este producto."
+
+# Admin/Moderación
+msgid "Aprobar"
+msgstr "Aprobar"
+
+msgid "Rechazar"
+msgstr "Rechazar"
+
+msgid "Pendiente"
+msgstr "Pendiente"
+
+msgid "Aprobado"
+msgstr "Aprobado"
+
+msgid "Rechazado"
+msgstr "Rechazado"
+
+# Nombres de idiomas
+msgid "Spanish"
+msgstr "Español"
+
+msgid "English"
+msgstr "Inglés"
+
+# Registro/Login
+msgid "Nombre de usuario"
+msgstr "Nombre de usuario"
+
+msgid "Contraseña"
+msgstr "Contraseña"
+
+msgid "Correo electrónico"
+msgstr "Correo electrónico"
+
+msgid "Repetir contraseña"
+msgstr "Repetir contraseña"
+
+# Propuestas
+msgid "Nombre del producto"
+msgstr "Nombre del producto"
+
+msgid "Precio"
+msgstr "Precio"
+
+msgid "Imagen"
+msgstr "Imagen"
+
+msgid "Enlace"
+msgstr "Enlace"
+
+msgid "Estado"
+msgstr "Estado"
+
+msgid "Usuario"
+msgstr "Usuario"
+
+msgid "Fecha de creación"
+msgstr "Fecha de creación"
+
+# Reseñas
+msgid "Calificación"
+msgstr "Calificación"
+
+msgid "Comentario"
+msgstr "Comentario"
+
+msgid "Fecha"
+msgstr "Fecha"
+
+# Errores
+msgid "Error al conectar con la API externa."
+msgstr "Error al conectar con la API externa."
+
+msgid "La API externa tardó demasiado en responder. Por favor, intenta más tarde."
+msgstr "La API externa tardó demasiado en responder. Por favor, intenta más tarde."
+
+msgid "No se pudo conectar con la API externa. Verifica tu conexión a internet."
+msgstr "No se pudo conectar con la API externa. Verifica tu conexión a internet."
+
+msgid "Error al procesar los datos:"
+msgstr "Error al procesar los datos:"

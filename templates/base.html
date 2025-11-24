@@ -51,6 +51,11 @@
                 {% trans "Tiendas" %}
               </a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'catalog:partner_products' %}">
+                <i class="bi bi-link-45deg"></i> {% trans "Páginas Aliadas" %}
+              </a>
+            </li>
           </ul>
 
           <form class="d-flex" role="search" action="{% url 'catalog:product_list' %}">
@@ -60,15 +65,16 @@
             </button>
           </form>
 
-          <div class="ms-3 d-flex align-items-center">
+          <div class="ms-3 d-flex align-items-center gap-2">
 
             <!-- Selector de idioma -->
-            <form action="{% url 'set_language' %}" method="post" class="ms-2 d-flex align-items-center">
+            <form action="{% url 'set_language' %}" method="post" class="d-flex align-items-center">
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <select name="language" class="form-select form-select-sm" onchange="this.form.submit()">
-                <option value="es" {% if LANGUAGE_CODE == 'es' %}selected{% endif %}>ES</option>
-                <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>EN</option>
+              <select name="language" class="form-select form-select-sm language-selector" 
+                      onchange="this.form.submit()">
+                <option value="es" {% if LANGUAGE_CODE == 'es' %}selected{% endif %}>🇪🇸 ES</option>
+                <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>🇬🇧 EN</option>
               </select>
             </form>
 
