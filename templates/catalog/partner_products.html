@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block title %}Ofertum · {% trans "Páginas Aliadas" %}{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h2 class="mb-0">
+    <i class="bi bi-link-45deg"></i> {% trans "Páginas Aliadas" %}
+    {% if category %}<span class="text-muted">· {{ category }}</span>{% endif %}
+    {% if store %}<span class="text-muted">· {{ store }}</span>{% endif %}
+  </h2>
+
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'catalog:partner_products' %}">
+      <i class="bi bi-x-circle me-1"></i> {% trans "Limpiar filtros" %}
+    </a>
+  </div>
+</div>
+
+<div class="alert alert-info mb-4">
+  <i class="bi bi-info-circle me-2"></i>
+  {% trans "Estos productos provienen de nuestros socios aliados. Los precios y disponibilidad pueden variar." %}
+</div>
+
+{% if error_message %}
+  <div class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    {{ error_message }}
+  </div>
+{% endif %}
+
+{# Chips de filtros activos #}
+<div class="mb-3">
+  {% if q %}<span class="badge bg-light text-dark me-1"><i class="bi bi-search"></i> {{ q }}</span>{% endif %}
+  {% if category %}<span class="badge bg-light text-dark me-1"><i class="bi bi-tag"></i> {{ category }}</span>{% endif %}
+  {% if store %}<span class="badge bg-light text-dark me-1"><i class="bi bi-shop"></i> {{ store }}</span>{% endif %}
+  {% if price_min %}<span class="badge bg-light text-dark me-1"><i class="bi bi-currency-dollar"></i> {% trans "Min" %} {{ price_min }}</span>{% endif %}
+  {% if price_max %}<span class="badge bg-light text-dark me-1"><i class="bi bi-currency-dollar"></i> {% trans "Max" %} {{ price_max }}</span>{% endif %}
+</div>
+
+{# placeholders traducibles #}
+{% translate "Nombre o descripción..." as ph_search %}
+{% translate "Categoría" as ph_category %}
+{% translate "Tienda" as ph_store %}
+{% translate "Min" as ph_min %}
+{% translate "Max" as ph_max %}
+{% translate "Ordenar por" as ph_order %}
+{% translate "Aplicar" as lbl_apply %}
+{% translate "Nombre (A–Z)" as opt_name %}
+{% translate "Precio: menor a mayor" as opt_price_asc %}
+{% translate "Precio: mayor a menor" as opt_price_desc %}
+
+<form class="row gy-2 gx-2 mb-4 align-items-end" action="">
+  <div class="col-sm-4">
+    <label class="form-label mb-1">{% trans "Buscar" %}</label>
+    <input class="form-control" name="q" placeholder="{{ ph_search }}" value="{{ q }}">
+  </div>
+  <div class="col-sm-3">
+    <label class="form-label mb-1">{% trans "Categoría" %}</label>
+    <input class="form-control" name="category" placeholder="{{ ph_category }}" value="{{ category }}">
+  </div>
+  <div class="col-sm-3">
+    <label class="form-label mb-1">{% trans "Tienda" %}</label>
+    <input class="form-control" name="store" placeholder="{{ ph_store }}" value="{{ store }}">
+  </div>
+  <div class="col-sm-1">
+    <label class="form-label mb-1">{% trans "Min" %}</label>
+    <input class="form-control" name="min" placeholder="{{ ph_min }}" value="{{ price_min }}">
+  </div>
+  <div class="col-sm-1">
+    <label class="form-label mb-1">{% trans "Max" %}</label>
+    <input class="form-control" name="max" placeholder="{{ ph_max }}" value="{{ price_max }}">
+  </div>
+
+  <div class="col-sm-3">
+    <label class="form-label mb-1">{{ ph_order }}</label>
+    <select class="form-select" name="sort">
+      <option value="name"       {% if sort == 'name' %}selected{% endif %}>{{ opt_name }}</option>
+      <option value="price_asc"  {% if sort == 'price_asc' %}selected{% endif %}>{{ opt_price_asc }}</option>
+      <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>{{ opt_price_desc }}</option>
+    </select>
+  </div>
+
+  <div class="col-sm-2">
+    <button class="btn btn-primary w-100" type="submit">
+      <i class="bi bi-funnel"></i> {{ lbl_apply }}
+    </button>
+  </div>
+</form>
+
+{% if items %}
+  <div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for p in items %}
+    <div class="col reveal-up">
+      <div class="card card-product h-100 card-tilt">
+        {% if p.image %}
+          <img src="{{ p.image }}" class="card-img-top" alt="{{ p.name }}" onerror="this.style.display='none'">
+        {% endif %}
+
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            {% if p.category %}
+              <span class="badge-pill">
+                {{ p.category }}
+              </span>
+            {% else %}
+              <span class="badge-pill">{% trans "Sin categoría" %}</span>
+            {% endif %}
+
+            {% if p.store %}
+              <span class="text-muted small">
+                <i class="bi bi-shop"></i> {{ p.store }}
+              </span>
+            {% endif %}
+          </div>
+
+          <h5 class="card-title mb-1">
+            {{ p.name }}
+          </h5>
+
+          {# Precio #}
+          <div class="price mb-3">${{ p.price|floatformat:2 }}</div>
+
+          {# Badge de producto externo #}
+          <span class="badge bg-info text-dark mb-3 d-inline-block">
+            <i class="bi bi-link-45deg me-1"></i> {% trans "Producto aliado" %}
+          </span>
+
+          <div class="d-flex gap-2">
+            {% if p.link %}
+              <a href="{{ p.link }}" target="_blank" class="btn btn-primary">
+                <i class="bi bi-box-arrow-up-right"></i> {% trans "Ver producto" %}
+              </a>
+            {% else %}
+              <button class="btn btn-secondary" disabled>
+                <i class="bi bi-info-circle"></i> {% trans "Sin enlace" %}
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="text-center py-5">
+    <div class="display-6 mb-2"><i class="bi bi-emoji-frown"></i></div>
+    <p class="text-muted mb-3">{% trans "No encontramos productos con esos filtros." %}</p>
+    <a class="btn btn-outline-secondary" href="{% url 'catalog:partner_products' %}">
+      {% trans "Intentar de nuevo" %}
+    </a>
+  </div>
+{% endif %}
+
+{# Paginación #}
+{% if is_paginated %}
+  <nav class="mt-4" aria-label="Paginación de productos">
+    <ul class="pagination justify-content-center">
+
+      {# Botón Anterior #}
+      <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+        <a class="page-link"
+           {% if page_obj.has_previous %}
+             href="{% if querystring %}?{{ querystring }}&page={{ page_obj.previous_page_number }}{% else %}?page={{ page_obj.previous_page_number }}{% endif %}"
+           {% else %}
+             href="#" aria-disabled="true" tabindex="-1"
+           {% endif %}>
+          {% trans "Anterior" %}
+        </a>
+      </li>
+
+      {# Números de página (ventana ±2) #}
+      {% for num in paginator.page_range %}
+        {% if num == page_obj.number %}
+          <li class="page-item active" aria-current="page">
+            <span class="page-link">{{ num }}</span>
+          </li>
+        {% elif num >= page_obj.number|add:-2 and num <= page_obj.number|add:2 %}
+          <li class="page-item">
+            <a class="page-link"
+               href="{% if querystring %}?{{ querystring }}&page={{ num }}{% else %}?page={{ num }}{% endif %}">
+              {{ num }}
+            </a>
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+        <a class="page-link"
+           {% if page_obj.has_next %}
+             href="{% if querystring %}?{{ querystring }}&page={{ page_obj.next_page_number }}{% else %}?page={{ page_obj.next_page_number }}{% endif %}"
+           {% else %}
+             href="#" aria-disabled="true" tabindex="-1"
+           {% endif %}>
+          {% trans "Siguiente" %}
+        </a>
+      </li>
+    </ul>
+  </nav>
+{% endif %}
+
+{% endblock %}

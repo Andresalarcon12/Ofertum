@@ -1,0 +1,329 @@
+# ENGLISH TRANSLATIONS FOR OFERTUM PROJECT
+# Copyright (C) 2025
+# This file is distributed under the same license as the Ofertum package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Ofertum 2.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-23 23:00+0000\n"
+"PO-Revision-Date: 2025-11-23 23:00+0000\n"
+"Last-Translator: Ofertum Team\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# Base template - Navigation
+msgid "Alternar navegación"
+msgstr "Toggle navigation"
+
+msgid "Productos"
+msgstr "Products"
+
+msgid "Categorías"
+msgstr "Categories"
+
+msgid "Tiendas"
+msgstr "Stores"
+
+msgid "Páginas Aliadas"
+msgstr "Partner Pages"
+
+msgid "Buscar..."
+msgstr "Search..."
+
+msgid "Buscar"
+msgstr "Search"
+
+msgid "Hola,"
+msgstr "Hello,"
+
+msgid "Moderación"
+msgstr "Moderation"
+
+msgid "Mi cuenta"
+msgstr "My account"
+
+msgid "Cerrar sesión"
+msgstr "Logout"
+
+msgid "Registrarse"
+msgstr "Sign up"
+
+msgid "Iniciar sesión"
+msgstr "Login"
+
+msgid "Agregador de descuentos"
+msgstr "Deals aggregator"
+
+# Home page
+msgid "Inicio"
+msgstr "Home"
+
+# Product list
+msgid "Crear propuesta"
+msgstr "Create proposal"
+
+msgid "Limpiar filtros"
+msgstr "Clear filters"
+
+msgid "PDF"
+msgstr "PDF"
+
+msgid "Excel"
+msgstr "Excel"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Nombre o descripción..."
+msgstr "Name or description..."
+
+msgid "Categoría"
+msgstr "Category"
+
+msgid "Tienda"
+msgstr "Store"
+
+msgid "Filtrar por rating"
+msgstr "Filter by rating"
+
+msgid "Ordenar por"
+msgstr "Sort by"
+
+msgid "Aplicar"
+msgstr "Apply"
+
+msgid "Nombre (A–Z)"
+msgstr "Name (A–Z)"
+
+msgid "Precio: menor a mayor"
+msgstr "Price: low to high"
+
+msgid "Precio: mayor a menor"
+msgstr "Price: high to low"
+
+msgid "Mejor valorados"
+msgstr "Top rated"
+
+msgid "Rating"
+msgstr "Rating"
+
+msgid "—"
+msgstr "—"
+
+msgid "estrella y más"
+msgstr "star and up"
+
+msgid "estrellas y más"
+msgstr "stars and up"
+
+msgid "Sin categoría"
+msgstr "Uncategorized"
+
+msgid "Oferta activa"
+msgstr "Active deal"
+
+msgid "reseñas"
+msgstr "reviews"
+
+msgid "Sin valoraciones"
+msgstr "No ratings"
+
+msgid "Ver producto"
+msgstr "View product"
+
+msgid "Ir a tienda"
+msgstr "Go to store"
+
+msgid "No encontramos productos con esos filtros."
+msgstr "No products found with those filters."
+
+msgid "Intentar de nuevo"
+msgstr "Try again"
+
+msgid "Anterior"
+msgstr "Previous"
+
+msgid "Siguiente"
+msgstr "Next"
+
+# Partner products page
+msgid "Estos productos provienen de nuestros socios aliados. Los precios y disponibilidad pueden variar."
+msgstr "These products come from our partner sites. Prices and availability may vary."
+
+msgid "Producto aliado"
+msgstr "Partner product"
+
+msgid "Sin enlace"
+msgstr "No link"
+
+# Product detail
+msgid "Precio base"
+msgstr "Base price"
+
+msgid "Precio con oferta"
+msgstr "Deal price"
+
+msgid "Descripción"
+msgstr "Description"
+
+msgid "Disponibilidad"
+msgstr "Availability"
+
+msgid "Disponible"
+msgstr "Available"
+
+msgid "No disponible"
+msgstr "Not available"
+
+msgid "Valoraciones"
+msgstr "Ratings"
+
+msgid "Agregar reseña"
+msgstr "Add review"
+
+msgid "Editar reseña"
+msgstr "Edit review"
+
+# Categories
+msgid "productos"
+msgstr "products"
+
+msgid "producto"
+msgstr "product"
+
+# Stores
+msgid "Ver tienda"
+msgstr "View store"
+
+# Forms
+msgid "Enviar"
+msgstr "Submit"
+
+msgid "Cancelar"
+msgstr "Cancel"
+
+msgid "Guardar"
+msgstr "Save"
+
+msgid "Eliminar"
+msgstr "Delete"
+
+# Messages
+msgid "Cuenta creada y sesión iniciada."
+msgstr "Account created and logged in."
+
+msgid "Corrija los errores del formulario."
+msgstr "Please correct the form errors."
+
+msgid "Sesión cerrada."
+msgstr "Logged out."
+
+msgid "Propuesta enviada y está pendiente de revisión."
+msgstr "Proposal submitted and pending review."
+
+msgid "Por favor corrija los errores del formulario."
+msgstr "Please correct the form errors."
+
+msgid "Propuesta aprobada y convertida en producto."
+msgstr "Proposal approved and converted to product."
+
+msgid "Propuesta rechazada."
+msgstr "Proposal rejected."
+
+msgid "Acción inválida o propuesta ya moderada."
+msgstr "Invalid action or proposal already moderated."
+
+msgid "Reseña guardada."
+msgstr "Review saved."
+
+msgid "Ya existe una reseña para este producto."
+msgstr "A review already exists for this product."
+
+# Admin/Moderation
+msgid "Aprobar"
+msgstr "Approve"
+
+msgid "Rechazar"
+msgstr "Reject"
+
+msgid "Pendiente"
+msgstr "Pending"
+
+msgid "Aprobado"
+msgstr "Approved"
+
+msgid "Rechazado"
+msgstr "Rejected"
+
+# Language names
+msgid "Spanish"
+msgstr "Spanish"
+
+msgid "English"
+msgstr "English"
+
+# Register/Login
+msgid "Nombre de usuario"
+msgstr "Username"
+
+msgid "Contraseña"
+msgstr "Password"
+
+msgid "Correo electrónico"
+msgstr "Email"
+
+msgid "Repetir contraseña"
+msgstr "Repeat password"
+
+# Proposals
+msgid "Nombre del producto"
+msgstr "Product name"
+
+msgid "Precio"
+msgstr "Price"
+
+msgid "Imagen"
+msgstr "Image"
+
+msgid "Enlace"
+msgstr "Link"
+
+msgid "Estado"
+msgstr "Status"
+
+msgid "Usuario"
+msgstr "User"
+
+msgid "Fecha de creación"
+msgstr "Creation date"
+
+# Reviews
+msgid "Calificación"
+msgstr "Rating"
+
+msgid "Comentario"
+msgstr "Comment"
+
+msgid "Fecha"
+msgstr "Date"
+
+# Errors
+msgid "Error al conectar con la API externa."
+msgstr "Error connecting to external API."
+
+msgid "La API externa tardó demasiado en responder. Por favor, intenta más tarde."
+msgstr "The external API took too long to respond. Please try again later."
+
+msgid "No se pudo conectar con la API externa. Verifica tu conexión a internet."
+msgstr "Could not connect to the external API. Check your internet connection."
+
+msgid "Error al procesar los datos:"
+msgstr "Error processing data:"
